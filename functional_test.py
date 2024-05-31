@@ -1,11 +1,54 @@
+import sys
 import time
 
+import pytest
 from selenium import webdriver
 
-# browser = webdriver.Firefox()
-browser = webdriver.Chrome()
-browser.get('http://localhost:8000')
-# browser.get("https://pypi.org/project/selenium/")
 
-assert "The install worked successfully! Congratulations!" in browser.title
+class Test:
+    @classmethod
+    def setup_class(cls):
+        cls.browser = webdriver.Chrome()
 
+    @classmethod
+    def teardown_class(cls):
+        cls.browser.quit()
+
+    def test_can_start_a_list_and_retrieve_it_later(self):
+        """Тест: можно начать список и получить его позже"""
+        # Эдит слышала про крутое новое онлайн-приложение со списком
+        # неотложных дел. Она решает оценить его домашнюю страницу
+        self.browser.get('http://localhost:8000')
+
+        # Она видит, что заголовок и шапка страницы говорят о списках
+        # неотложных дел
+        assert "To-Do" in self.browser.title, "Browser title was " + self.browser.title
+
+        # Ей сразу же предлагается ввести элемент списка
+        # [...остальные комментарии, как и прежде]
+
+
+# Она набирает в текстовом поле "Купить павлиньи перья" (ее хобби –
+# вязание рыболовных мушек)
+
+
+# Когда она нажимает enter, страница обновляется, и теперь страница
+# содержит "1: Купить павлиньи перья" в качестве элемента списка
+
+# Текстовое поле по-прежнему приглашает ее добавить еще один элемент.
+# Она вводит "Сделать мушку из павлиньих перьев"
+# (Эдит очень методична)
+
+# Страница снова обновляется, и теперь показывает оба элемента ее списка
+
+# Эдит интересно, запомнит ли сайт ее список. Далее она видит, что
+# сайт сгенерировал для нее уникальный URL-адрес – об этом
+# выводится небольшой текст с объяснениями.
+
+# Она посещает этот URL-адрес – ее список по-прежнему там.
+
+# Удовлетворенная, она снова ложится спать
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main(["-qq"]))
