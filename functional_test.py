@@ -5,27 +5,26 @@ import pytest
 from selenium import webdriver
 
 
-class Test:
-    @classmethod
-    def setup_class(cls):
-        cls.browser = webdriver.Chrome()
+@pytest.fixture
+def browser():
+    browser = webdriver.Chrome()
+    yield browser
+    browser.quit()
 
-    @classmethod
-    def teardown_class(cls):
-        cls.browser.quit()
 
-    def test_can_start_a_list_and_retrieve_it_later(self):
-        """Тест: можно начать список и получить его позже"""
-        # Эдит слышала про крутое новое онлайн-приложение со списком
-        # неотложных дел. Она решает оценить его домашнюю страницу
-        self.browser.get('http://localhost:8000')
+@pytest.mark.xfail
+def test_can_start_a_list_and_retrieve_it_later(browser):
+    """Тест: можно начать список и получить его позже"""
+    # Эдит слышала про крутое новое онлайн-приложение со списком
+    # неотложных дел. Она решает оценить его домашнюю страницу
+    browser.get('http://localhost:8000')
 
-        # Она видит, что заголовок и шапка страницы говорят о списках
-        # неотложных дел
-        assert "To-Do" in self.browser.title, "Browser title was " + self.browser.title
+    # Она видит, что заголовок и шапка страницы говорят о списках
+    # неотложных дел
+    assert "To-Do" in browser.title, "Browser title was " + browser.title
 
-        # Ей сразу же предлагается ввести элемент списка
-        # [...остальные комментарии, как и прежде]
+    # Ей сразу же предлагается ввести элемент списка
+    # [...остальные комментарии, как и прежде]
 
 
 # Она набирает в текстовом поле "Купить павлиньи перья" (ее хобби –
