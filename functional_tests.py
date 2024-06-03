@@ -40,7 +40,8 @@ def test_can_start_a_list_and_retrieve_it_later(browser):
 
     table = browser.find_element(By.ID, "id_list_table")
     rows = table.find_elements(By.TAG_NAME, "tr")
-    assert True in [row.text == "1: Купить павлиньи перья" for row in rows]
+    assert True in [row.text == "1: Купить павлиньи перья" for row in rows], \
+        "Новый элемент списка не появился в таблице"
     # Текстовое поле по-прежнему приглашает ее добавить еще один элемент.
     # Она вводит "Сделать мушку из павлиньих перьев"
     # (Эдит очень методична)
