@@ -3,6 +3,8 @@ import time
 
 import pytest
 from selenium import webdriver
+from selenium.webdriver import Keys
+from selenium.webdriver.common.by import By
 
 
 @pytest.fixture
@@ -23,20 +25,28 @@ def test_can_start_a_list_and_retrieve_it_later(browser):
     # неотложных дел
     assert "To-Do" in browser.title, "Browser title was " + browser.title
 
+    inputbox = browser.find_element(By.ID, "id_new_item")
+    assert inputbox.get_attribute("placeholder") == "Enter a to-do item"
     # Ей сразу же предлагается ввести элемент списка
-    # [...остальные комментарии, как и прежде]
 
+    # Она набирает в текстовом поле "Купить павлиньи перья" (ее хобби –
+    # вязание рыболовных мушек)
+    inputbox.send_keys('Купить павлиньи перья')
 
-# Она набирает в текстовом поле "Купить павлиньи перья" (ее хобби –
-# вязание рыболовных мушек)
+    # Когда она нажимает enter, страница обновляется, и теперь страница
+    # содержит "1: Купить павлиньи перья" в качестве элемента списка
+    inputbox.send_keys(Keys.ENTER)
+    time.sleep(1)
 
+    table = browser.find_element(By.ID, "id_list_table")
+    rows = table.find_elements(By.TAG_NAME, "tr")
+    assert True in [row.text == "1: Купить павлиньи перья" for row in rows]
+    # Текстовое поле по-прежнему приглашает ее добавить еще один элемент.
+    # Она вводит "Сделать мушку из павлиньих перьев"
+    # (Эдит очень методична)
 
-# Когда она нажимает enter, страница обновляется, и теперь страница
-# содержит "1: Купить павлиньи перья" в качестве элемента списка
+    assert False
 
-# Текстовое поле по-прежнему приглашает ее добавить еще один элемент.
-# Она вводит "Сделать мушку из павлиньих перьев"
-# (Эдит очень методична)
 
 # Страница снова обновляется, и теперь показывает оба элемента ее списка
 
