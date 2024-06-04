@@ -6,6 +6,8 @@ from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
+from lists.models import Item
+
 
 @pytest.fixture
 def browser():
@@ -21,7 +23,8 @@ def check_for_row_in_list_table(row_text, browser: webdriver.Chrome):
     assert row_text in [row.text for row in rows]
 
 
-# @pytest.mark.xfail
+@pytest.mark.xfail(reason="assert False")
+@pytest.mark.django_db
 def test_can_start_a_list_and_retrieve_it_later(browser):
     """Тест: можно начать список и получить его позже"""
     # Эдит слышала про крутое новое онлайн-приложение со списком
@@ -57,12 +60,8 @@ def test_can_start_a_list_and_retrieve_it_later(browser):
     # Страница снова обновляется, и теперь показывает оба элемента ее списка
     check_for_row_in_list_table("1: Купить павлиньи перья", browser)
     check_for_row_in_list_table("2: Сделать мушку из павлиньих перьев", browser)
-    # assert "1: Купить павлиньи перья" in [row.text for row in rows], \
-    #     f"Первый элемент списка не появился в таблице. Содержимым было: {table.text}"
-    # assert "2: Сделать мушку из павлиньих перьев" in [row.text for row in rows], \
-    #     f"Второй элемент списка не появился в таблице. Содержимым было: {table.text}"
 
-    assert False
+    assert False, "End FTest"
 
 
 # Эдит интересно, запомнит ли сайт ее список. Далее она видит, что
