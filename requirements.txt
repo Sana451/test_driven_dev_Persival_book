@@ -140,6 +140,7 @@ typing_extensions==4.12.0
 urllib3==2.2.1
 webdriver-manager==4.0.1
 wsproto==1.2.0
+<<<<<<< HEAD
 asgiref==3.8.1
 attrs==23.2.0
 certifi==2024.2.2
@@ -171,3 +172,5 @@ typing_extensions==4.12.0
 urllib3==2.2.1
 webdriver-manager==4.0.1
 wsproto==1.2.0
+=======
+>>>>>>> aeb7c1813fd20eba70b26be7dc67fb72da17fb05
