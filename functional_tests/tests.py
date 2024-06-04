@@ -6,6 +6,8 @@ from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 
 from lists.models import Item
 
@@ -14,7 +16,7 @@ MAX_WAIT = 10
 
 @pytest.fixture
 def browser():
-    browser = webdriver.Chrome()
+    browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
     yield browser
     browser.quit()
 
