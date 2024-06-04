@@ -15,7 +15,9 @@ MAX_WAIT = 10
 
 @pytest.fixture
 def browser():
-    browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    options = webdriver.ChromeOptions()
+    options.headless = True
+    browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
     yield browser
     browser.quit()
 
