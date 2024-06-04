@@ -8,6 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 
 
 MAX_WAIT = 10
@@ -15,8 +16,8 @@ MAX_WAIT = 10
 
 @pytest.fixture
 def browser():
-    options = webdriver.ChromeOptions()
-    options.headless = True
+    options = Options()
+    options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
     yield browser
     browser.quit()
