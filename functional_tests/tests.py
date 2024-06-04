@@ -23,13 +23,14 @@ def check_for_row_in_list_table(row_text, browser: webdriver.Chrome):
     assert row_text in [row.text for row in rows]
 
 
-@pytest.mark.xfail(reason="assert False")
+# @pytest.mark.xfail(reason="assert False")
 @pytest.mark.django_db
-def test_can_start_a_list_and_retrieve_it_later(browser):
-    """Тест: можно начать список и получить его позже"""
+def test_can_start_a_list_and_retrieve_it_later(browser, live_server):
+    """Тест: можно начать список и получить его позже.
+    live_server is a built-in Django-pytest Fixture (used instead of Django unittest.LiveServerTestCase)"""
     # Эдит слышала про крутое новое онлайн-приложение со списком
     # неотложных дел. Она решает оценить его домашнюю страницу
-    browser.get('http://localhost:8000')
+    browser.get(live_server.url)
 
     # Она видит, что заголовок и шапка страницы говорят о списках
     # неотложных дел
