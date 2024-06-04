@@ -5,8 +5,11 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import WebDriverException
 
 from lists.models import Item
+
+MAX_WAIT = 10
 
 
 @pytest.fixture
@@ -16,11 +19,19 @@ def browser():
     browser.quit()
 
 
-def check_for_row_in_list_table(row_text, browser: webdriver.Chrome):
-    """Подтверждение строки в таблице списка"""
-    table = browser.find_element(By.ID, "id_list_table")
-    rows = table.find_elements(By.TAG_NAME, "tr")
-    assert row_text in [row.text for row in rows]
+def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome):
+    """Ожидать строку в таблице списка"""
+    start_time = time.time()
+    while True:
+        try:
+            table = browser.find_element(By.ID, "id_list_table")
+            rows = table.find_elements(By.TAG_NAME, "tr")
+            assert row_text in [row.text for row in rows]
+            return
+        except (AssertionError, WebDriverException) as e:
+            if time.time() - start_time > MAX_WAIT:
+                raise e
+            time.sleep(0.5)
 
 
 # @pytest.mark.xfail(reason="assert False")
@@ -47,9 +58,8 @@ def test_can_start_a_list_and_retrieve_it_later(browser, live_server):
     # Когда она нажимает enter, страница обновляется, и теперь страница
     # содержит "1: Купить павлиньи перья" в качестве элемента списка
     inputbox.send_keys(Keys.ENTER)
-    time.sleep(1)
 
-    check_for_row_in_list_table('1: Купить павлиньи перья', browser)
+    wait_for_row_in_list_table('1: Купить павлиньи перья', browser)
 
     # Текстовое поле по-прежнему приглашает ее добавить еще один элемент.
     # Она вводит "Сделать мушку из павлиньих перьев"
@@ -57,12 +67,12 @@ def test_can_start_a_list_and_retrieve_it_later(browser, live_server):
     inputbox = browser.find_element(By.ID, "id_new_item")
     inputbox.send_keys("Сделать мушку из павлиньих перьев")
     inputbox.send_keys(Keys.ENTER)
-    time.sleep(1)
-    # Страница снова обновляется, и теперь показывает оба элемента ее списка
-    check_for_row_in_list_table("1: Купить павлиньи перья", browser)
-    check_for_row_in_list_table("2: Сделать мушку из павлиньих перьев", browser)
 
-    assert False, "End FTest"
+    # Страница снова обновляется, и теперь показывает оба элемента ее списка
+    wait_for_row_in_list_table("1: Купить павлиньи перья", browser)
+    wait_for_row_in_list_table("2: Сделать мушку из павлиньих перьев", browser)
+
+    pytest.fail("End FTest")
 
 
 # Эдит интересно, запомнит ли сайт ее список. Далее она видит, что
