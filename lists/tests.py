@@ -3,7 +3,7 @@ from django.http import HttpRequest
 from django.urls import resolve
 from django.template.loader import render_to_string
 from django.test import Client
-from pytest_django.asserts import assertTemplateUsed
+from pytest_django.asserts import assertTemplateUsed, assertRedirects
 from rest_framework import status
 
 from lists.models import Item
@@ -15,30 +15,6 @@ def test_home_page_returns_correct_html(client: Client):
     """Тест: домашняя страница возвращает правильный html"""
     response = client.get("/")
     assertTemplateUsed(response, "home.html")
-
-
-@pytest.mark.django_db
-def test_can_save_a_POST_request(client: Client):
-    """Тест: можно сохранить post-запрос"""
-    response = client.post("/", data={"item_text": "A new list item"})
-    assert Item.objects.count() == 1
-    new_item = Item.objects.first()
-    assert new_item.text == "A new list item"
-
-
-@pytest.mark.django_db
-def test_redirects_after_POST(client: Client):
-    """Тест: переадресует после post-запроса"""
-    response = client.post("/", data={"item_text": "A new list item"})
-    assert response.status_code == status.HTTP_302_FOUND
-    assert response["location"] == "/"
-
-
-@pytest.mark.django_db
-def test_only_saves_items_when_necessary(client: Client):
-    """Тест: сохраняет элементы, только когда нужно"""
-    client.get('/')
-    assert Item.objects.count() == 0
 
 
 @pytest.mark.django_db
@@ -62,12 +38,40 @@ def test_saving_and_retrieving_items():
 
 
 @pytest.mark.django_db
-def test_displays_all_list_items(client: Client):
-    """Тест: отображаются все элементы списка"""
+def test_uses_list_template(client: Client):
+    """Тест: используется шаблон списка"""
+    response = client.get('/lists/url-for-redirect/')
+
+    assertTemplateUsed(response, "list.html")
+
+
+@pytest.mark.django_db
+def test_displays_all_items(client: Client):
+    """Тест представления списка"""
     Item.objects.create(text='itemey 1')
     Item.objects.create(text='itemey 2')
 
-    response = client.get('/')
+    response = client.get('/lists/url-for-redirect/')
 
+    assert response.status_code == status.HTTP_200_OK
     assert 'itemey 1' in response.content.decode()
     assert 'itemey 2' in response.content.decode()
+
+
+@pytest.mark.django_db
+class TestNewList:
+    """Тест нового списка."""
+
+    def test_can_save_a_POST_request(self, client: Client):
+        """Тест: можно сохранить post-запрос."""
+        response = client.post("/lists/new", data={"item_text": "A new list item"})
+        assert response.status_code == status.HTTP_302_FOUND
+        assert Item.objects.count() == 1
+        new_item = Item.objects.first()
+        assert new_item.text == "A new list item"
+
+    def test_redirects_after_POST(self, client: Client):
+        """Тест: переадресует после post-запроса"""
+        response = client.post("/lists/new", data={'item_text': "A new list item"})
+
+        assertRedirects(response, "/lists/url-for-redirect/")

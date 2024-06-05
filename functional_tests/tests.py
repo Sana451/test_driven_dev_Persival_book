@@ -19,8 +19,8 @@ def browser():
     browser.quit()
 
 
-def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome):
-    """Ожидать строку в таблице списка"""
+def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome, max_wait=5):
+    """Ожидать строку в таблице списка."""
     start_time = time.time()
     while True:
         try:
@@ -37,8 +37,8 @@ def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome):
 # @pytest.mark.xfail(reason="assert False")
 @pytest.mark.django_db
 def test_can_start_a_list_for_one_user(browser, live_server):
-    """Тест: можно начать список для одного пользователя.
-    live_server is a built-in Django-pytest Fixture (used instead of Django unittest.LiveServerTestCase)"""
+    """Тест: можно начать список для одного пользователя."""
+    # # live_server is a built-in Django-pytest Fixture (used instead of Django unittest.LiveServerTestCase)
     # Эдит слышала про крутое новое онлайн-приложение со списком
     # неотложных дел. Она решает оценить его домашнюю страницу
     browser.get(live_server.url)
@@ -50,11 +50,9 @@ def test_can_start_a_list_for_one_user(browser, live_server):
     inputbox = browser.find_element(By.ID, "id_new_item")
     assert inputbox.get_attribute("placeholder") == "Enter a to-do item"
     # Ей сразу же предлагается ввести элемент списка
-
     # Она набирает в текстовом поле "Купить павлиньи перья" (ее хобби –
     # вязание рыболовных мушек)
     inputbox.send_keys("Купить павлиньи перья")
-
     # Когда она нажимает enter, страница обновляется, и теперь страница
     # содержит "1: Купить павлиньи перья" в качестве элемента списка
     inputbox.send_keys(Keys.ENTER)
@@ -83,24 +81,23 @@ def test_can_start_a_list_for_one_user(browser, live_server):
 
 @pytest.mark.django_db
 def test_multiple_users_can_start_lists_at_different_urls(browser, live_server):
-    """Тест: многочисленные пользователи могут начать списки по разным url"""
+    """Тест: многочисленные пользователи могут начать списки по разным url."""
     # Эдит начинает новый список
     browser.get(live_server.url)
     inputbox = browser.find_element(By.ID, "id_new_item")
     inputbox.send_keys('Купить павлиньи перья')
     inputbox.send_keys(Keys.ENTER)
-    time.sleep(5)
     wait_for_row_in_list_table('1: Купить павлиньи перья', browser)
     # Она замечает, что ее список имеет уникальный URL-адрес
     edith_list_url = browser.current_url
-    assert re.compile(r"/lists/.+").match(edith_list_url)
+    assert re.match(r".+/lists/.+", edith_list_url)
 
     # Теперь новый пользователь, Фрэнсис, приходит на сайт.
     # # Мы используем новый сеанс браузера, тем самым обеспечивая, чтобы никакая
     # # информация от Эдит не прошла через данные cookie и пр.
     browser.quit()
     options = Options()
-    # options.add_argument('--dheadless=new')
+    # options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
     # Фрэнсис посещает домашнюю страницу. Нет никаких признаков списка Эдит
     browser.get(live_server.url)
@@ -117,7 +114,7 @@ def test_multiple_users_can_start_lists_at_different_urls(browser, live_server):
 
     # Фрэнсис получает уникальный URL-адрес
     francis_list_url = browser.current_url
-    assert re.compile(r"/lists/.+").match(francis_list_url)
+    assert re.match(r".+/lists/.+", francis_list_url)
     assert francis_list_url != edith_list_url
 
     # Опять-таки, нет ни следа от списка Эдит

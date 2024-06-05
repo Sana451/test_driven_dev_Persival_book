@@ -5,12 +5,18 @@ from django.http.request import HttpRequest
 from lists.models import Item
 
 
-def home_page(requets: HttpRequest):
+def home_page(request: HttpRequest):
     """Домашняя страница"""
-    if requets.method == "POST":
-        new_item_text = requets.POST['item_text']
-        Item.objects.create(text=new_item_text)
-        return redirect('/')
+    return render(request, "home.html")
 
+
+def view_list(request: HttpRequest):
+    """Представление списка"""
     items = Item.objects.all()
-    return render(requets, "home.html", {'items': items})
+    return render(request, "list.html", {'items': items})
+
+
+def new_list(request):
+    """Новый список"""
+    Item.objects.create(text=request.POST["item_text"])
+    return redirect('/lists/url-for-redirect/')
