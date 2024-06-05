@@ -14,14 +14,12 @@ from selenium.webdriver.chrome.options import Options
 
 @pytest.fixture
 def browser():
-    options = Options()
-    # options.add_argument('--headless=new')
-    browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
+    browser = webdriver.Chrome()
     yield browser
     browser.quit()
 
 
-def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome, max_wait=10):
+def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome):
     """Ожидать строку в таблице списка"""
     start_time = time.time()
     while True:
