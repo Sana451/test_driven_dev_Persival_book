@@ -14,7 +14,9 @@ from selenium.webdriver.chrome.options import Options
 
 @pytest.fixture
 def browser():
-    browser = webdriver.Chrome()
+    options = Options()
+    options.add_argument('--headless=new')
+    browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
     yield browser
     browser.quit()
 
@@ -97,7 +99,7 @@ def test_multiple_users_can_start_lists_at_different_urls(browser, live_server):
     # # информация от Эдит не прошла через данные cookie и пр.
     browser.quit()
     options = Options()
-    # options.add_argument('--headless=new')
+    options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
     # Фрэнсис посещает домашнюю страницу. Нет никаких признаков списка Эдит
     browser.get(live_server.url)
