@@ -1,15 +1,16 @@
 import sys
 import time
 import re
+import math
 
 import pytest
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import WebDriverException
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 @pytest.fixture
@@ -125,6 +126,38 @@ def test_multiple_users_can_start_lists_at_different_urls(browser, live_server):
     assert 'Купить молоко' in page_text
 
     # Удовлетворенные, они оба ложатся спать
+
+
+class TestNewVisitor:
+    """Тест нового посетителя"""
+
+    def test_layout_and_styling(self, browser, live_server):
+        """Тест макета и стилевого оформления"""
+        # Эдит открывает домашнюю страницу
+        browser.get(live_server.url)
+        browser.set_window_size(1024, 768)
+        # Она замечает, что поле ввода аккуратно центрировано
+        inputbox = browser.find_element(By.ID, "id_new_item")
+
+        assert math.isclose(
+            a := 512,
+            b := inputbox.location["x"] + inputbox.size["width"] / 2,
+            rel_tol=0.02
+        ), f"{a} != {b}, within {a * 0.02} delta"
+
+        # Она начинает новый список и видит, что поле ввода там
+        # также находится по центру
+        inputbox.send_keys("testing")
+        inputbox.send_keys(Keys.ENTER)
+        wait_for_row_in_list_table("1: testing", browser)
+
+        inputbox = browser.find_element(By.ID, "id_new_item")
+
+        assert math.isclose(
+            a := 512,
+            b := inputbox.location["x"] + inputbox.size["width"] / 2,
+            rel_tol=0.02
+        ), f"{a} != {b}, within {a * 0.02} delta"
 
 
 if __name__ == "__main__":
