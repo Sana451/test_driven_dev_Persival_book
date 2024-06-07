@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import re
@@ -18,6 +19,11 @@ def browser():
     options = Options()
     options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
+    staging_server = os.environ.get("STAGING_SERVER")
+    if staging_server:
+        browser.staging_url = "http://" + staging_server
+    else:
+        browser.staging_url = None
     yield browser
     browser.quit()
 
@@ -44,7 +50,8 @@ def test_can_start_a_list_for_one_user(browser, live_server):
     # # live_server is a built-in Django-pytest Fixture (used instead of Django unittest.LiveServerTestCase)
     # Эдит слышала про крутое новое онлайн-приложение со списком
     # неотложных дел. Она решает оценить его домашнюю страницу
-    browser.get(live_server.url)
+    staging_url = browser.staging_url
+    browser.get(staging_url if staging_url else live_server.url)
 
     # Она видит, что заголовок и шапка страницы говорят о списках
     # неотложных дел
@@ -86,7 +93,8 @@ def test_can_start_a_list_for_one_user(browser, live_server):
 def test_multiple_users_can_start_lists_at_different_urls(browser, live_server):
     """Тест: многочисленные пользователи могут начать списки по разным url."""
     # Эдит начинает новый список
-    browser.get(live_server.url)
+    staging_url = browser.staging_url
+    browser.get(staging_url if staging_url else live_server.url)
     inputbox = browser.find_element(By.ID, "id_new_item")
     inputbox.send_keys('Купить павлиньи перья')
     inputbox.send_keys(Keys.ENTER)
@@ -103,7 +111,7 @@ def test_multiple_users_can_start_lists_at_different_urls(browser, live_server):
     options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
     # Фрэнсис посещает домашнюю страницу. Нет никаких признаков списка Эдит
-    browser.get(live_server.url)
+    browser.get(staging_url if staging_url else live_server.url)
     page_text = browser.find_element(By.TAG_NAME, "body").text
     assert "Купить павлиньи перья" not in page_text
     assert "Сделать мушку" not in page_text
@@ -134,7 +142,8 @@ class TestNewVisitor:
     def test_layout_and_styling(self, browser, live_server):
         """Тест макета и стилевого оформления"""
         # Эдит открывает домашнюю страницу
-        browser.get(live_server.url)
+        staging_url = browser.staging_url
+        browser.get(staging_url if staging_url else live_server.url)
         browser.set_window_size(1024, 768)
         # Она замечает, что поле ввода аккуратно центрировано
         inputbox = browser.find_element(By.ID, "id_new_item")
