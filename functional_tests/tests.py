@@ -5,6 +5,7 @@ import re
 import math
 
 import pytest
+from django.urls import reverse
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
@@ -154,6 +155,11 @@ class TestNewVisitor:
             rel_tol=0.02
         ), f"{a} != {b}, within {a * 0.02} delta"
 
+        # # заголовок теперь имеет красный цвет (rgba 255, 0, 0, 1), похоже, что base.css загружен
+        h1_to_do_title = browser.find_element(By.CSS_SELECTOR, ".text-center h1")
+        h1_color = h1_to_do_title.value_of_css_property("color")
+        assert h1_color == "rgba(255, 0, 0, 1)"
+
         # Она начинает новый список и видит, что поле ввода там
         # также находится по центру
         inputbox.send_keys("testing")
@@ -167,6 +173,7 @@ class TestNewVisitor:
             b := inputbox.location["x"] + inputbox.size["width"] / 2,
             rel_tol=0.02
         ), f"{a} != {b}, within {a * 0.02} delta"
+
 
 
 if __name__ == "__main__":
