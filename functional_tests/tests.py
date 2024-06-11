@@ -175,6 +175,5 @@ class TestNewVisitor:
         ), f"{a} != {b}, within {a * 0.02} delta"
 
 
-
 if __name__ == "__main__":
     sys.exit(pytest.main(["-qq"]))
