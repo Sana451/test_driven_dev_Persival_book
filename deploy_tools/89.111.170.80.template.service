@@ -1,12 +1,12 @@
 [Unit]
-Description=Gunicorn server for sitename
-# sitename (sana451.ru or 89.111.170.80)
+Description=Gunicorn server for SITENAME
+# SITENAME (sana451.ru or 89.111.170.80)
 
 [Service]
 Restart=on-failure
 User=root
-WorkingDirectory=/home/username/sites/sitename/source
-ExecStart=/home/username/sites/sitename/virtualenv/bin/gunicorn --bind unix:/tmp/sitename.socket superlists.wsgi:application
+WorkingDirectory=/home/USERNAME/sites/SITENAME/source
+ExecStart=/home/USERNAME/sites/SITENAME/virtualenv/bin/gunicorn --bind unix:/tmp/SITENAME.socket superlists.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

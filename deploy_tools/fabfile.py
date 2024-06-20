@@ -88,8 +88,13 @@ def _update_database(conn: Connection, source_folder):
 def _update_nginx_settings(conn: Connection, source_folder):
     deploy_tools_folder = f"{source_folder}/deploy_tools"
     conn.run(f"ls {deploy_tools_folder} -a")
+    conn.run(f"""sed -r -i "s/SITENAME/{conn.host}/g" {deploy_tools_folder}/nginx.template.conf""")
+    conn.run(f"""sed -r -i "s/USERNAME/{conn.user}/g" {deploy_tools_folder}/nginx.template.conf""")
 
     conn.run(f"cat {deploy_tools_folder}/89.111.170.80.template.service")
+    conn.run(f"ls /etc/nginx/sites-available/{conn.host}")
+
+
 
 
 
