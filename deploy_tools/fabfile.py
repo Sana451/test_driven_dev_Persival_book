@@ -87,7 +87,6 @@ def _update_database(conn: Connection, source_folder):
 
 def _update_nginx_settings(conn: Connection, source_folder):
     deploy_tools_folder = f"{source_folder}/deploy_tools"
-    conn.run(f"ls {deploy_tools_folder} -a")
 
     conn.run(f"""sed -r -i "s/SITENAME/{conn.host}/g" {deploy_tools_folder}/nginx.template.conf""")
     conn.run(f"""sed -r -i "s/USERNAME/{conn.user}/g" {deploy_tools_folder}/nginx.template.conf""")
@@ -98,9 +97,14 @@ def _update_nginx_settings(conn: Connection, source_folder):
 
     conn.run(f"""sed -r -i "s/SITENAME/{conn.host}/g" {deploy_tools_folder}/gunicorn-systemd.template.service""")
     conn.run(f"""sed -r -i "s/USERNAME/{conn.user}/g" {deploy_tools_folder}/gunicorn-systemd.template.service""")
-    conn.run(f"sudo rm -rf /etc/systemd/system/gunicorn-systemd.template.service")
-    conn.run(f"""sudo cp {deploy_tools_folder}/gunicorn-systemd.template.service 
-                            /etc/systemd/system/gunicorn-systemd.template.service""")
+    conn.run(f"sudo rm -rf /etc/systemd/system/{conn.host}.service")
+    conn.run(f"sudo cp {deploy_tools_folder}/gunicorn-systemd.template.service "
+             f"/etc/systemd/system/{conn.host}.service")
+
+    conn.run("sudo systemctl daemon-reload")
+    conn.run("sudo systemctl reload nginx")
+    conn.run(f"sudo systemctl enable {conn.host}.service")
+    conn.run(f"sudo systemctl start {conn.host}.service")
 
 
 def main(conn: Connection):
