@@ -88,14 +88,19 @@ def _update_database(conn: Connection, source_folder):
 def _update_nginx_settings(conn: Connection, source_folder):
     deploy_tools_folder = f"{source_folder}/deploy_tools"
     conn.run(f"ls {deploy_tools_folder} -a")
+
     conn.run(f"""sed -r -i "s/SITENAME/{conn.host}/g" {deploy_tools_folder}/nginx.template.conf""")
     conn.run(f"""sed -r -i "s/USERNAME/{conn.user}/g" {deploy_tools_folder}/nginx.template.conf""")
+    conn.run(f"sudo rm -rf /etc/nginx/sites-available/{conn.host}")
+    conn.run(f"sudo rm -rf /etc/nginx/sites-enabled/{conn.host}")
+    conn.run(f"sudo cp {deploy_tools_folder}/nginx.template.conf /etc/nginx/sites-available/{conn.host}")
+    conn.run(f"sudo ln -s /etc/nginx/sites-available/{conn.host} /etc/nginx/sites-enabled/{conn.host}")
 
-    conn.run(f"cat {deploy_tools_folder}/89.111.170.80.template.service")
-    conn.run(f"ls /etc/nginx/sites-available/{conn.host}")
-
-
-
+    conn.run(f"""sed -r -i "s/SITENAME/{conn.host}/g" {deploy_tools_folder}/gunicorn-systemd.template.service""")
+    conn.run(f"""sed -r -i "s/USERNAME/{conn.user}/g" {deploy_tools_folder}/gunicorn-systemd.template.service""")
+    conn.run(f"sudo rm -rf /etc/systemd/system/gunicorn-systemd.template.service")
+    conn.run(f"""sudo cp {deploy_tools_folder}/gunicorn-systemd.template.service 
+                            /etc/systemd/system/gunicorn-systemd.template.service""")
 
 
 def main(conn: Connection):
