@@ -11,7 +11,7 @@ connection = Connection("sana451@89.111.170.80")
 @task
 def deploy(conn: Connection):
     site_folder = f"/home/{conn.user}/sites/{conn.host}"
-    source_folder = site_folder + "/source"
+    source_folder = f"{site_folder}/source"
     _create_directory_structure_if_necessary(conn, site_folder)
     _get_latest_source(conn, source_folder)
     _update_settings(conn, source_folder, repr(conn.host))
@@ -30,7 +30,7 @@ def _create_directory_structure_if_necessary(conn: Connection, site_folder):
 def _get_latest_source(conn: Connection, source_folder):
     """Получить самый свежий исходный код."""
     try:
-        conn.run(f"ls {source_folder}/.git", hide=True)
+        conn.run(f"sudo ls {source_folder}/.git", hide=True)
         conn.run(f"cd {source_folder} && git fetch")
     except UnexpectedExit:
         conn.run(f"git clone {REPO_URL} {source_folder}")
@@ -44,8 +44,8 @@ def _update_settings(conn: Connection, source_folder, site_name):
     """Обновить настройки."""
     settings_path = source_folder + "/superlists/settings.py"
 
-    conn.run(f"sed -i 's/DEBUG = True/DEBUG = False/g' {settings_path}", hide=True)
-    conn.run(f"""sed -r -i "s/ALLOWED_HOSTS =.+$/ALLOWED_HOSTS = [{site_name},]/g" {settings_path}""", hide=True)
+    conn.run(f"sudo sed -i 's/DEBUG = True/DEBUG = False/g' {settings_path}", hide=True)
+    conn.run(f"""sudo sed -r -i "s/ALLOWED_HOSTS =.+$/ALLOWED_HOSTS = [{site_name},]/g" {settings_path}""", hide=True)
 
     secret_key_file = source_folder + "/superlists/secret_key.py"
     try:
@@ -68,28 +68,29 @@ def _update_virtualenv(conn: Connection, source_folder):
     """Обновить виртуальную среду."""
     virtualenv_folder = source_folder + '/../virtualenv'
     try:
-        conn.run(f"ls {virtualenv_folder}/bin/pip", hide=True)
+        conn.run(f"sudo ls {virtualenv_folder}/bin/pip", hide=True)
     except UnexpectedExit:
-        conn.run(f"python3 -m venv {virtualenv_folder}")
+        # conn.run("sudo apt install python3.12-venv")
+        conn.run(f"sudo python3 -m venv {virtualenv_folder}")
     finally:
-        conn.run(f"{virtualenv_folder}/bin/pip install -r {source_folder}/requirements.txt", hide=False)
+        conn.run(f"sudo {virtualenv_folder}/bin/pip install -r {source_folder}/requirements.txt", hide=False)
 
 
 def _update_static_files(conn: Connection, source_folder):
     """Обновить статические файлы."""
-    conn.run(f"cd {source_folder} && ../virtualenv/bin/python manage.py collectstatic --noinput")
+    conn.run(f"cd {source_folder} && sudo ../virtualenv/bin/python manage.py collectstatic --noinput")
 
 
 def _update_database(conn: Connection, source_folder):
     """Обновить базу данных."""
-    conn.run(f"""cd {source_folder} && ../virtualenv/bin/python manage.py migrate --noinput""")
+    conn.run(f"""cd {source_folder} && sudo ../virtualenv/bin/python manage.py migrate --noinput""")
 
 
 def _update_nginx_settings(conn: Connection, source_folder):
     deploy_tools_folder = f"{source_folder}/deploy_tools"
 
-    conn.run(f"""sed -r -i "s/SITENAME/{conn.host}/g" {deploy_tools_folder}/nginx.template.conf""")
-    conn.run(f"""sed -r -i "s/USERNAME/{conn.user}/g" {deploy_tools_folder}/nginx.template.conf""")
+    conn.run(f"""sudo sed -r -i "s/SITENAME/{conn.host}/g" {deploy_tools_folder}/nginx.template.conf""")
+    conn.run(f"""sudo sed -r -i "s/USERNAME/{conn.user}/g" {deploy_tools_folder}/nginx.template.conf""")
     conn.run(f"sudo rm -rf /etc/nginx/sites-available/{conn.host}")
     conn.run(f"sudo rm -rf /etc/nginx/sites-enabled/{conn.host}")
     conn.run(f"sudo cp {deploy_tools_folder}/nginx.template.conf /etc/nginx/sites-available/{conn.host}")
@@ -101,6 +102,9 @@ def _update_nginx_settings(conn: Connection, source_folder):
     conn.run(f"sudo cp {deploy_tools_folder}/gunicorn-systemd.template.service "
              f"/etc/systemd/system/{conn.host}.service")
 
+    conn.run(f"""sudo sed -r -i "s/user www-data;/user {conn.user};/g" /etc/nginx/nginx.conf""")
+
+    conn.run("sudo systemctl start nginx")
     conn.run("sudo systemctl daemon-reload")
     conn.run("sudo systemctl reload nginx")
     conn.run(f"sudo systemctl enable {conn.host}.service")
