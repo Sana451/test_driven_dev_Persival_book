@@ -18,6 +18,7 @@ def deploy(conn: Connection):
     _update_virtualenv(conn, source_folder)
     _update_static_files(conn, source_folder)
     _update_database(conn, source_folder)
+    _update_nginx_settings(conn, source_folder)
 
 
 def _create_directory_structure_if_necessary(conn: Connection, site_folder):
@@ -82,6 +83,14 @@ def _update_static_files(conn: Connection, source_folder):
 def _update_database(conn: Connection, source_folder):
     """Обновить базу данных."""
     conn.run(f"""cd {source_folder} && ../virtualenv/bin/python manage.py migrate --noinput""")
+
+
+def _update_nginx_settings(conn: Connection, source_folder):
+    deploy_tools_folder = f"{source_folder}/deploy_tools"
+    conn.run(f"ls {deploy_tools_folder} -a")
+
+    conn.run(f"cat {deploy_tools_folder}/89.111.170.80.template.service")
+
 
 
 def main(conn: Connection):
