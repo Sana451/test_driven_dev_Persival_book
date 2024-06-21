@@ -1,5 +1,6 @@
 import math
 
+from pytest_django.fixtures import live_server
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
