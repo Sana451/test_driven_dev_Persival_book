@@ -15,7 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 def browser():
     options = Options()
     headless = os.environ.get("HEADLESS")
-    if headless:
+    if not headless:
         options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
     staging_server = os.environ.get("STAGING_SERVER")
