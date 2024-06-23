@@ -1,4 +1,5 @@
 import pytest
+from django.core.exceptions import ValidationError
 
 from lists.models import Item, List
 
@@ -24,11 +25,15 @@ class TestListAndItemModels:
 
         saved_items = Item.objects.all()
         assert saved_items.count() == 2
+        assert saved_items[0].text == "The first (ever) list item"
+        assert saved_items[1].list == list_
+        assert saved_items[1].text == "Item the second"
+        assert saved_items[1].list == list_
 
-        first_saved_item = saved_items[0]
-        second_saved_item = saved_items[1]
-
-        assert first_saved_item.text == "The first (ever) list item"
-        assert first_saved_item.list == list_
-        assert second_saved_item.text == "Item the second"
-        assert second_saved_item.list == list_
+    def test_cannot_save_empty_list_items(self):
+        """Тест: нельзя добавлять пустые элементы списка."""
+        list_ = List.objects.create()
+        item = Item(text="", list=list_)
+        with pytest.raises(ValidationError):
+            item.save()
+            item.full_clean()

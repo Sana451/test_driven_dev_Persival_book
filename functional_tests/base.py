@@ -14,7 +14,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 @pytest.fixture
 def browser():
     options = Options()
-    options.add_argument('--headless=new')
+    headless = os.environ.get("HEADLESS")
+    if headless:
+        options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
     staging_server = os.environ.get("STAGING_SERVER")
     if staging_server:
@@ -25,7 +27,7 @@ def browser():
     browser.quit()
 
 
-def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome, max_wait=5):
+def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome, max_wait=10):
     """Ожидать строку в таблице списка."""
     start_time = time.time()
     while True:

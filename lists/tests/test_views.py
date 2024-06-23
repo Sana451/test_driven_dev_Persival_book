@@ -1,5 +1,7 @@
 import pytest
+from django.http import HttpResponse
 from django.test import Client
+from django.utils.html import escape
 from pytest_django.asserts import assertTemplateUsed, assertRedirects
 from rest_framework import status
 
@@ -68,6 +70,22 @@ class TestNewList:
         new_list = List.objects.first()
 
         assertRedirects(response, f"/lists/{new_list.id}/")
+
+    def test_validation_errors_are_sent_back_to_home_page_template(self, client: Client):
+        """Тест: ошибки валидации отсылаются назад в шаблон домашней страницы."""
+        response: HttpResponse = client.post("/lists/new", data={"item_text": ""})
+        assert response.status_code == status.HTTP_200_OK
+        assertTemplateUsed(response, "home.html")
+        expected_error = escape("You can't have an empty list item")
+        assert expected_error in response.content.decode()
+
+    def test_invalid_list_items_arent_saved(self, client: Client):
+        """Тест: сохраняются недопустимые элементы списка."""
+        client.post("/lists/new", data={"item_text": ""})
+        assert List.objects.count() == 0
+        assert Item.objects.count() == 0
+
+
 
 
 @pytest.mark.django_db
