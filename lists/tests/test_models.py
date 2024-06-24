@@ -7,7 +7,7 @@ from lists.models import Item, List
 @pytest.mark.django_db
 class TestListAndItemModels:
     def test_saving_and_retrieving_items(self):
-        """Тест сохранения и получения элементов списка"""
+        """Тест сохранения и получения элементов списка."""
         list_ = List()
         list_.save()
 
@@ -37,3 +37,8 @@ class TestListAndItemModels:
         with pytest.raises(ValidationError):
             item.save()
             item.full_clean()
+
+    def test_get_absolute_url(self):
+        """Тест: получен абсолютный url."""
+        list_ = List.objects.create()
+        assert list_.get_absolute_url() == f"/lists/{list_.id}/"
