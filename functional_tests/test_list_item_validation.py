@@ -44,6 +44,8 @@ class TestItemValidation:
         )
         assert error_element
         # И она может его исправить, заполнив поле неким текстом
-        browser.find_element(By.ID, "id_new_item").send_keys("Make tea")
+        input_field = (browser.find_element(By.ID, "id_new_item"))
+        input_field.send_keys("Make tea")
+        input_field.send_keys(Keys.ENTER)
         wait_for_row_in_list_table("1: Buy milk", browser)
         wait_for_row_in_list_table("2: Make tea", browser)

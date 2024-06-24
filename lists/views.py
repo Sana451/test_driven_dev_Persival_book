@@ -6,21 +6,28 @@ from lists.models import Item, List
 
 
 def home_page(request: HttpRequest):
-    """Домашняя страница"""
+    """Домашняя страница."""
     return render(request, "home.html")
 
 
 def view_list(request: HttpRequest, list_id):
-    """Представление списка"""
+    """Представление списка."""
     list_ = List.objects.get(id=list_id)
+    error = None
     if request.method == "POST":
-        Item.objects.create(text=request.POST["item_text"], list=list_)
-        return redirect(f'/lists/{list_.id}/')
-    return render(request, "list.html", {'list': list_})
+        try:
+            item = Item.objects.create(text=request.POST["item_text"], list=list_)
+            item.full_clean()
+            item.save()
+            return redirect(f"/lists/{list_.id}/")
+        except ValidationError:
+            item.delete()
+            error = "You can't have an empty list item"
+    return render(request, "list.html", {"list": list_, "error": error})
 
 
 def new_list(request):
-    """Новый список"""
+    """Новый список."""
     list_ = List.objects.create()
     item = Item.objects.create(text=request.POST["item_text"], list=list_)
     try:
@@ -29,4 +36,4 @@ def new_list(request):
         list_.delete()
         error = "You can't have an empty list item"
         return render(request, "home.html", {"error": error})
-    return redirect(f'/lists/{list_.id}/')
+    return redirect(f"/lists/{list_.id}/")

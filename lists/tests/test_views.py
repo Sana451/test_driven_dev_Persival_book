@@ -68,9 +68,21 @@ class TestListView:
         other_list = List.objects.create()
         correct_list = List.objects.create()
 
-        response = client.post(f"/lists/{correct_list.id}/", data={"item_text": "New item 4 existing lst"})
+        response = client.post(f"/lists/{correct_list.id}/", data={"item_text": "A new item for an existing list"})
 
         assertRedirects(response, f"/lists/{correct_list.id}/")
+
+    def test_validation_errors_end_up_on_lists_page(self, client: Client):
+        """Тест: ошибки валидации оканчиваются на странице списков."""
+        list_ = List.objects.create()
+        client.post(f"/lists/{list_.id}/", data={"item_text": ""})
+
+        response = client.post(f"/lists/{list_.id}/", data={"item_text": ""})
+
+        assert response.status_code == status.HTTP_200_OK
+        assertTemplateUsed(response, "list.html")
+        expected_error = escape("You can't have an empty list item")
+        assert expected_error in response.content.decode()
 
 
 @pytest.mark.django_db
