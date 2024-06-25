@@ -42,5 +42,11 @@ def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome, max_wait=10)
             time.sleep(0.5)
 
 
+def get_item_input_box(browser: webdriver.Chrome):
+    """Получить поле ввода для элемента."""
+    # return browser.find_element(By.ID, "id_new_item")
+    return browser.find_element(By.ID, "id_text")
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main(["-qq"]))

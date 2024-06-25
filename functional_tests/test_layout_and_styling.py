@@ -4,7 +4,7 @@ from pytest_django.fixtures import live_server
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 
-from functional_tests.base import wait_for_row_in_list_table, browser
+from functional_tests.base import wait_for_row_in_list_table, browser, get_item_input_box
 
 
 class TestLayoutAndStyling:
@@ -17,11 +17,11 @@ class TestLayoutAndStyling:
         browser.get(staging_url if staging_url else live_server.url)
         browser.set_window_size(1024, 768)
         # Она замечает, что поле ввода аккуратно центрировано
-        inputbox = browser.find_element(By.ID, "id_new_item")
+        input_box = get_item_input_box(browser)
 
         assert math.isclose(
             a := 512,
-            b := inputbox.location["x"] + inputbox.size["width"] / 2,
+            b := input_box.location["x"] + input_box.size["width"] / 2,
             rel_tol=0.02
         ), f"{a} != {b}, within {a * 0.02} delta"
 
@@ -32,16 +32,14 @@ class TestLayoutAndStyling:
 
         # Она начинает новый список и видит, что поле ввода там
         # также находится по центру
-        inputbox.send_keys("testing")
-        inputbox.send_keys(Keys.ENTER)
+        input_box.send_keys("testing")
+        input_box.send_keys(Keys.ENTER)
         wait_for_row_in_list_table("1: testing", browser)
 
-        inputbox = browser.find_element(By.ID, "id_new_item")
+        input_box = get_item_input_box(browser)
 
         assert math.isclose(
             a := 512,
-            b := inputbox.location["x"] + inputbox.size["width"] / 2,
+            b := input_box.location["x"] + input_box.size["width"] / 2,
             rel_tol=0.02
         ), f"{a} != {b}, within {a * 0.02} delta"
-
-

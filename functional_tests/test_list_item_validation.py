@@ -1,14 +1,13 @@
 import pytest
 
 from pytest_django import fixtures
-from selenium.common import TimeoutException
 from selenium.webdriver import Keys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from functional_tests.base import wait_for_row_in_list_table, browser
+from functional_tests.base import wait_for_row_in_list_table, browser, get_item_input_box
 
 wait = WebDriverWait(browser, timeout=3)
 
@@ -22,30 +21,39 @@ class TestItemValidation:
         # Эдит открывает домашнюю страницу и случайно пытается отправить
         # пустой элемент списка. Она нажимает Enter на пустом поле ввода
         browser.get(live_server.url)
-        browser.find_element(By.ID, "id_new_item").send_keys(Keys.ENTER)
-        # Домашняя страница обновляется, и появляется сообщение об ошибке,
-        # которое говорит, что элементы списка не должны быть пустыми
-        error_element = WebDriverWait(browser, 5).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".has-error"))
-        )
-        assert error_element
-        # Она пробует снова, теперь с неким текстом для элемента, и теперь
-        input_field = browser.find_element(By.ID, "id_new_item")
-        input_field.send_keys("Buy milk")
-        input_field.send_keys(Keys.ENTER)
+        input_box = get_item_input_box(browser)
+        input_box.send_keys(Keys.ENTER)
 
-        wait_for_row_in_list_table("1: Buy milk", browser)
-        # это срабатывает
-        # Как ни странно, Эдит решает отправить второй пустой элемент списка
-        browser.find_element(By.ID, "id_new_item").send_keys(Keys.ENTER)
-        # Она получает аналогичное предупреждение на странице списка
-        error_element = WebDriverWait(browser, 2).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".has-error"))
+        # Браузер перехватывает запрос и не загружает страницу со списком
+        WebDriverWait(browser, 5).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:invalid"))
         )
-        assert error_element
-        # И она может его исправить, заполнив поле неким текстом
-        input_field = (browser.find_element(By.ID, "id_new_item"))
-        input_field.send_keys("Make tea")
-        input_field.send_keys(Keys.ENTER)
+        # Эдит начинает набирать текст нового элемента и ошибка исчезает
+        input_box = get_item_input_box(browser)
+        input_box.send_keys("Buy milk")
+        WebDriverWait(browser, 5).until_not(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:invalid"))
+        )
+        WebDriverWait(browser, 5).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:valid"))
+        )
+        # И она может отправить его успешно
+        input_box = get_item_input_box(browser)
+        input_box.send_keys(Keys.ENTER)
+        # Как ни странно, Эдит решает отправить второй пустой элемент списка
+        input_box = get_item_input_box(browser)
+        input_box.send_keys(Keys.ENTER)
+        # И снова браузер не подчинится
+        wait_for_row_in_list_table("1: Buy milk", browser)
+        WebDriverWait(browser, 5).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:invalid"))
+        )
+        # И она может исправиться, заполнив поле текстом
+        input_box = get_item_input_box(browser)
+        input_box.send_keys("Make tea")
+        WebDriverWait(browser, 5).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:valid"))
+        )
+        input_box.send_keys(Keys.ENTER)
         wait_for_row_in_list_table("1: Buy milk", browser)
         wait_for_row_in_list_table("2: Make tea", browser)

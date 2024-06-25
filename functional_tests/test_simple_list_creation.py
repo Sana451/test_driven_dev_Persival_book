@@ -9,7 +9,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
-from functional_tests.base import wait_for_row_in_list_table, browser
+from functional_tests.base import wait_for_row_in_list_table, browser, get_item_input_box
 
 
 class TestNewVisitor:
@@ -29,24 +29,24 @@ class TestNewVisitor:
         # неотложных дел
         assert "To-Do" in browser.title, "Browser title was " + browser.title
 
-        inputbox = browser.find_element(By.ID, "id_new_item")
-        assert inputbox.get_attribute("placeholder") == "Enter a to-do item"
+        input_box = get_item_input_box(browser)
+        assert input_box.get_attribute("placeholder") == "Enter a to-do item"
         # Ей сразу же предлагается ввести элемент списка
         # Она набирает в текстовом поле "Купить павлиньи перья" (ее хобби –
         # вязание рыболовных мушек)
-        inputbox.send_keys("Купить павлиньи перья")
+        input_box.send_keys("Купить павлиньи перья")
         # Когда она нажимает enter, страница обновляется, и теперь страница
         # содержит "1: Купить павлиньи перья" в качестве элемента списка
-        inputbox.send_keys(Keys.ENTER)
+        input_box.send_keys(Keys.ENTER)
 
         wait_for_row_in_list_table('1: Купить павлиньи перья', browser)
 
         # Текстовое поле по-прежнему приглашает ее добавить еще один элемент.
         # Она вводит "Сделать мушку из павлиньих перьев"
         # (Эдит очень методична)
-        inputbox = browser.find_element(By.ID, "id_new_item")
-        inputbox.send_keys("Сделать мушку из павлиньих перьев")
-        inputbox.send_keys(Keys.ENTER)
+        input_box = get_item_input_box(browser)
+        input_box.send_keys("Сделать мушку из павлиньих перьев")
+        input_box.send_keys(Keys.ENTER)
 
         # Страница снова обновляется, и теперь показывает оба элемента ее списка
         wait_for_row_in_list_table("1: Купить павлиньи перья", browser)
@@ -66,10 +66,10 @@ class TestNewVisitor:
         # Эдит начинает новый список
         staging_url = browser.staging_url
         browser.get(staging_url if staging_url else live_server.url)
-        inputbox = browser.find_element(By.ID, "id_new_item")
-        inputbox.send_keys('Купить павлиньи перья')
+        inputbox = get_item_input_box(browser)
+        inputbox.send_keys("Купить павлиньи перья")
         inputbox.send_keys(Keys.ENTER)
-        wait_for_row_in_list_table('1: Купить павлиньи перья', browser)
+        wait_for_row_in_list_table("1: Купить павлиньи перья", browser)
         # Она замечает, что ее список имеет уникальный URL-адрес
         edith_list_url = browser.current_url
         assert re.match(r".+/lists/.+", edith_list_url)
@@ -89,10 +89,10 @@ class TestNewVisitor:
 
         # Фрэнсис начинает новый список, вводя новый элемент. Он менее
         # интересен, чем список Эдит...
-        inputbox = browser.find_element(By.ID, "id_new_item")
-        inputbox.send_keys('Купить молоко')
+        inputbox = get_item_input_box(browser)
+        inputbox.send_keys("Купить молоко")
         inputbox.send_keys(Keys.ENTER)
-        wait_for_row_in_list_table('1: Купить молоко', browser)
+        wait_for_row_in_list_table("1: Купить молоко", browser)
 
         # Фрэнсис получает уникальный URL-адрес
         francis_list_url = browser.current_url
