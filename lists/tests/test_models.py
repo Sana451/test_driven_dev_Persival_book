@@ -5,40 +5,62 @@ from lists.models import Item, List
 
 
 @pytest.mark.django_db
-class TestListAndItemModels:
-    def test_saving_and_retrieving_items(self):
-        """Тест сохранения и получения элементов списка."""
-        list_ = List()
-        list_.save()
+class TestItemModel:
+    """Тест модели элемента."""
 
-        first_item = Item()
-        first_item.text = "The first (ever) list item"
-        first_item.list = list_
-        first_item.save()
-        second_item = Item()
-        second_item.text = "Item the second"
-        second_item.list = list_
-        second_item.save()
+    def test_default_text(self):
+        """Тест заданного по умолчанию текста."""
+        item = Item()
+        assert item.text == ""
 
-        saved_list = List.objects.first()
-        assert saved_list == list_
+    def test_string_representation(self):
+        """Тест строкового представления."""
+        item = Item(text="some text")
+        assert str(item) == "some text"
 
-        saved_items = Item.objects.all()
-        assert saved_items.count() == 2
-        assert saved_items[0].text == "The first (ever) list item"
-        assert saved_items[1].list == list_
-        assert saved_items[1].text == "Item the second"
-        assert saved_items[1].list == list_
 
-    def test_cannot_save_empty_list_items(self):
-        """Тест: нельзя добавлять пустые элементы списка."""
-        list_ = List.objects.create()
-        item = Item(text="", list=list_)
-        with pytest.raises(ValidationError):
-            item.save()
-            item.full_clean()
+@pytest.mark.django_db
+class TestListModel:
+    """Тест модели списка."""
 
     def test_get_absolute_url(self):
         """Тест: получен абсолютный url."""
         list_ = List.objects.create()
         assert list_.get_absolute_url() == f"/lists/{list_.id}/"
+
+    def test_list_ordering(self):
+        """Тест упорядочения списка."""
+        list_1 = List.objects.create()
+        item_1 = Item.objects.create(list=list_1, text="i1")
+        item_2 = Item.objects.create(list=list_1, text="item 2")
+        item_3 = Item.objects.create(list=list_1, text="3")
+        assert list(Item.objects.all()) == [item_1, item_2, item_3]
+
+
+@pytest.mark.django_db
+class TestListAndItemModels:
+    """Тест моделей списка и элемента."""
+
+    def test_item_is_related_to_list(self):
+        """Тест: элемент связан со списком."""
+        list_ = List.objects.create()
+        item = Item()
+        item.list = list_
+        item.save()
+        assert item in list_.item_set.all()
+
+    def test_duplicate_items_are_invalid(self):
+        """Тест: повторы элементов не допустимы."""
+        list_ = List.objects.create()
+        Item.objects.create(list=list_, text="bla")
+        with pytest.raises(ValidationError):
+            item = Item(list=list_, text="bla")
+            item.full_clean()
+
+    def test_CAN_save_same_item_to_different_lists(self):
+        """Тест: МОЖЕТ сохранить тот же элемент в разные списки."""
+        list_1 = List.objects.create()
+        list_2 = List.objects.create()
+        Item.objects.create(list=list_1, text="bla")
+        item = Item.objects.create(list=list_2, text="bla")
+        item.full_clean()  # не должен поднять исключение

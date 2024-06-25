@@ -21,16 +21,13 @@ class TestItemValidation:
         # Эдит открывает домашнюю страницу и случайно пытается отправить
         # пустой элемент списка. Она нажимает Enter на пустом поле ввода
         browser.get(live_server.url)
-        input_box = get_item_input_box(browser)
-        input_box.send_keys(Keys.ENTER)
-
+        get_item_input_box(browser).send_keys(Keys.ENTER)
         # Браузер перехватывает запрос и не загружает страницу со списком
         WebDriverWait(browser, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:invalid"))
         )
         # Эдит начинает набирать текст нового элемента и ошибка исчезает
-        input_box = get_item_input_box(browser)
-        input_box.send_keys("Buy milk")
+        get_item_input_box(browser).send_keys("Buy milk")
         WebDriverWait(browser, 5).until_not(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:invalid"))
         )
@@ -38,22 +35,35 @@ class TestItemValidation:
             EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:valid"))
         )
         # И она может отправить его успешно
-        input_box = get_item_input_box(browser)
-        input_box.send_keys(Keys.ENTER)
+        get_item_input_box(browser).send_keys(Keys.ENTER)
         # Как ни странно, Эдит решает отправить второй пустой элемент списка
-        input_box = get_item_input_box(browser)
-        input_box.send_keys(Keys.ENTER)
+        get_item_input_box(browser).send_keys(Keys.ENTER)
         # И снова браузер не подчинится
         wait_for_row_in_list_table("1: Buy milk", browser)
         WebDriverWait(browser, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:invalid"))
         )
         # И она может исправиться, заполнив поле текстом
-        input_box = get_item_input_box(browser)
-        input_box.send_keys("Make tea")
+        get_item_input_box(browser).send_keys("Make tea")
         WebDriverWait(browser, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#id_text:valid"))
         )
-        input_box.send_keys(Keys.ENTER)
+        get_item_input_box(browser).send_keys(Keys.ENTER)
         wait_for_row_in_list_table("1: Buy milk", browser)
         wait_for_row_in_list_table("2: Make tea", browser)
+
+    def test_cannot_add_duplicate_items(self, browser: webdriver.Chrome, live_server: fixtures.live_server):
+        """Тест: нельзя добавлять повторяющиеся элементы."""
+        # Эдит открывает домашнюю страницу и начинает новый список
+        browser.get(live_server.url)
+        get_item_input_box(browser).send_keys("Buy wellies")
+        get_item_input_box(browser).send_keys(Keys.ENTER)
+        wait_for_row_in_list_table("1: Buy wellies", browser)
+        # Она случайно пытается ввести повторяющийся элемент
+        get_item_input_box(browser).send_keys("Buy wellies")
+        get_item_input_box(browser).send_keys(Keys.ENTER)
+        # Она видит полезное сообщение об ошибке
+        error_element = WebDriverWait(browser, 5).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".has-error"))
+        )
+        assert error_element.text == "You've already got this in your list"
