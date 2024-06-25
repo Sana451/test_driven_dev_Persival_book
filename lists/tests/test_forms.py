@@ -1,4 +1,7 @@
+import pytest
+
 from lists.forms import ItemForm, EMPTY_ITEM_ERROR
+from lists.models import List, Item
 
 
 class TestItemForm:
@@ -15,3 +18,16 @@ class TestItemForm:
         form = ItemForm(data={"text": ""})
         assert form.is_valid() is False
         assert form.errors["text"][0] == EMPTY_ITEM_ERROR
+
+    @pytest.mark.django_db
+    def test_form_save_handles_saving_to_a_list(self):
+        """Тест: метод save формы обрабатывает сохранение в список."""
+        list_ = List.objects.create()
+        form = ItemForm(data={"text": "do me"})
+        new_item = form.save(for_list=list_)
+        # new_item = form.save(commit=False)
+        # new_item.list = list_
+        # new_item.save()
+        assert new_item == Item.objects.first()
+        assert new_item.text == "do me"
+        assert new_item.list == list_
