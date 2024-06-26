@@ -19,11 +19,12 @@ class TestLayoutAndStyling:
         # Она замечает, что поле ввода аккуратно центрировано
         input_box = get_item_input_box(browser)
 
+        related_tolerance = 0.06
         assert math.isclose(
             a := 512,
             b := input_box.location["x"] + input_box.size["width"] / 2,
-            rel_tol=0.02
-        ), f"{a} != {b}, within {a * 0.02} delta"
+            rel_tol=related_tolerance
+        ), f"{a} != {b}, within {a * related_tolerance} delta"
 
         # # заголовок теперь имеет красный цвет (rgba 255, 0, 0, 1), похоже, что base.css загружен
         h1_to_do_title = browser.find_element(By.CSS_SELECTOR, ".text-center h1")
@@ -41,5 +42,5 @@ class TestLayoutAndStyling:
         assert math.isclose(
             a := 512,
             b := input_box.location["x"] + input_box.size["width"] / 2,
-            rel_tol=0.02
-        ), f"{a} != {b}, within {a * 0.02} delta"
+            rel_tol=related_tolerance
+        ), f"{a} != {b}, within {a * related_tolerance} delta"

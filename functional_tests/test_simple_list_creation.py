@@ -15,7 +15,6 @@ from functional_tests.base import wait_for_row_in_list_table, browser, get_item_
 class TestNewVisitor:
     """Тест нового посетителя"""
 
-    # @pytest.mark.xfail(reason="assert False")
     @pytest.mark.django_db
     def test_can_start_a_list_for_one_user(self, browser, live_server):
         """Тест: можно начать список для одного пользователя."""

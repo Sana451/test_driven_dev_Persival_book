@@ -8,7 +8,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+
+DUPLICATE_ITEM_ERROR = "You've already got this in your list"
 
 
 @pytest.fixture
@@ -46,6 +50,22 @@ def get_item_input_box(browser: webdriver.Chrome):
     """Получить поле ввода для элемента."""
     # return browser.find_element(By.ID, "id_new_item")
     return browser.find_element(By.ID, "id_text")
+
+
+def wait_until_presence_of_element_by_css_selector(browser: webdriver.Chrome, selector: str):
+    """Подождать пока элемент появится на странице."""
+    error_element = WebDriverWait(browser, 5).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+    )
+    return error_element
+
+
+def wait_until_NOT_presence_of_element_by_css_selector(browser: webdriver.Chrome, selector: str):
+    """Подождать пока элемент появится на странице."""
+    error_element = WebDriverWait(browser, 5).until_not(
+        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+    )
+    return error_element
 
 
 if __name__ == "__main__":

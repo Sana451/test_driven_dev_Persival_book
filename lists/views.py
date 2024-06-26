@@ -1,6 +1,8 @@
+from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.http.request import HttpRequest
 
+from functional_tests.base import DUPLICATE_ITEM_ERROR
 from lists.forms import ItemForm
 from lists.models import List
 
@@ -17,8 +19,11 @@ def view_list(request: HttpRequest, list_id):
     if request.method == "POST":
         form = ItemForm(request.POST)
         if form.is_valid():
-            form.save(for_list=list_)
-            return redirect(list_)
+            try:
+                form.save(for_list=list_)
+                return redirect(list_)
+            except IntegrityError:
+                form.errors["text"] = DUPLICATE_ITEM_ERROR
     return render(request, "list.html", {"list": list_, "form": form})
 
 
