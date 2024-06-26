@@ -60,7 +60,7 @@ class TestItemValidation:
         error_element = wait_until_presence_of_element_by_css_selector(browser, ".has-error")
         assert error_element.text == DUPLICATE_ITEM_ERROR
 
-    @pytest.mark.skip
+    # @pytest.mark.skip
     def test_error_messages_are_cleared_on_input(self, browser: webdriver.Chrome, live_server: fixtures.live_server):
         """Тест: сообщения об ошибках очищаются при вводе."""
         # Эдит начинает список и вызывает ошибку валидации:
