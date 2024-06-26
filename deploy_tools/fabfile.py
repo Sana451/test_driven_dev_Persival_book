@@ -109,6 +109,7 @@ def _update_nginx_settings(conn: Connection, source_folder):
     conn.run("sudo systemctl reload nginx")
     conn.run(f"sudo systemctl enable {conn.host}.service")
     conn.run(f"sudo systemctl start {conn.host}.service")
+    conn.run(f"sudo systemctl restart {conn.host}.service")
 
 
 def main(conn: Connection):
