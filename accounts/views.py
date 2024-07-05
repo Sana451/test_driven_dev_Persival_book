@@ -4,6 +4,7 @@ import uuid
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib.sessions.models import Session
 from django.core.mail import send_mail
 from django.http import HttpRequest
 from django.shortcuts import render, redirect
@@ -35,7 +36,6 @@ def login(request):
     user = authenticate(uid=uid)
     if user is not None:
         auth_login(request, user)
-    print("redirect to / (views.login returned user is None)")
     return redirect('/')
 
 

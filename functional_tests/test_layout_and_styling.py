@@ -18,8 +18,8 @@ class TestLayoutAndStyling:
         browser.set_window_size(1024, 768)
         # Она замечает, что поле ввода аккуратно центрировано
         input_box = get_item_input_box(browser)
-
         related_tolerance = 0.06
+
         assert math.isclose(
             a := 512,
             b := input_box.location["x"] + input_box.size["width"] / 2,

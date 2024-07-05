@@ -52,18 +52,18 @@ def get_item_input_box(browser: webdriver.Chrome):
     return browser.find_element(By.ID, "id_text")
 
 
-def wait_until_presence_of_element_by_css_selector(browser: webdriver.Chrome, selector: str):
+def wait_until_presence_of_element(browser: webdriver.Chrome, selector: str, by=By.CSS_SELECTOR):
     """Подождать пока элемент появится на странице."""
     error_element = WebDriverWait(browser, 5).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+        EC.presence_of_element_located((by, selector))
     )
     return error_element
 
 
-def wait_until_NOT_presence_of_element_by_css_selector(browser: webdriver.Chrome, selector: str):
-    """Подождать пока элемент появится на странице."""
+def wait_until_NOT_presence_of_element(browser: webdriver.Chrome, selector: str, by=By.CSS_SELECTOR):
+    """Подождать пока элемент не исчезнет со страницы."""
     error_element = WebDriverWait(browser, 5).until_not(
-        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+        EC.presence_of_element_located((by, selector))
     )
     return error_element
 
