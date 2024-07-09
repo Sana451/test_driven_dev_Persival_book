@@ -3,6 +3,7 @@ import sys
 import time
 
 import pytest
+from django.conf import settings
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -11,6 +12,9 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+
+from django.contrib.auth import BACKEND_SESSION_KEY, SESSION_KEY, get_user_model
+from django.contrib.sessions.backends.db import SessionStore
 
 DUPLICATE_ITEM_ERROR = "You've already got this in your list"
 
@@ -66,6 +70,9 @@ def wait_until_NOT_presence_of_element(browser: webdriver.Chrome, selector: str,
         EC.presence_of_element_located((by, selector))
     )
     return error_element
+
+
+
 
 
 if __name__ == "__main__":
