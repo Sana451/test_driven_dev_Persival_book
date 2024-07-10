@@ -12,7 +12,7 @@ from functional_tests.base import (wait_for_row_in_list_table,
                                    get_item_input_box,
                                    DUPLICATE_ITEM_ERROR,
                                    wait_until_presence_of_element,
-                                   wait_until_NOT_presence_of_element)
+                                   wait_until_NOT_presence_of_element, add_list_item)
 
 wait = WebDriverWait(browser, timeout=3)
 
@@ -52,9 +52,7 @@ class TestItemValidation:
         # Эдит открывает домашнюю страницу и начинает новый список
         staging_url = browser.staging_url
         browser.get(staging_url if staging_url else live_server.url)
-        get_item_input_box(browser).send_keys("Buy wellies")
-        get_item_input_box(browser).send_keys(Keys.ENTER)
-        wait_for_row_in_list_table("1: Buy wellies", browser)
+        add_list_item("Buy wellies", browser)
         # Она случайно пытается ввести повторяющийся элемент
         get_item_input_box(browser).send_keys("Buy wellies")
         get_item_input_box(browser).send_keys(Keys.ENTER)
@@ -68,9 +66,7 @@ class TestItemValidation:
         # Эдит начинает список и вызывает ошибку валидации:
         staging_url = browser.staging_url
         browser.get(staging_url if staging_url else live_server.url)
-        get_item_input_box(browser).send_keys("Banter too thick")
-        get_item_input_box(browser).send_keys(Keys.ENTER)
-        wait_for_row_in_list_table("1: Banter too thick", browser)
+        add_list_item("Banter too thick", browser)
         get_item_input_box(browser).send_keys("Banter too thick")
         get_item_input_box(browser).send_keys(Keys.ENTER)
         error_element = wait_until_presence_of_element(browser, ".has-error")

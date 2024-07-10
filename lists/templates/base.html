@@ -16,6 +16,14 @@
 <body>
     <nav class="navbar navbar-default" role="navigation">
         <div class="container-fluid">
+
+
+            {% if user.email %}
+            <ul class="nav navbar-nav navbar-left">
+                <li><a href="{% url 'my_lists' user.email %}">My lists</a> </li>
+            </ul>
+            {% endif %}
+
             <a class="navbar-brand" href="/">Superlists</a>
             {% if user.email %}
                 <ul class="nav navbar-nav navbar-right">
@@ -35,28 +43,16 @@
                     {% csrf_token %}
                 </form>
             {% endif %}
+
         </div>
     </nav>
-
-<!--    {% if messages %}-->
-<!--        <div class="row">-->
-<!--            <div class="col-md-8">-->
-<!--                {% for message in messages %}-->
-<!--                    {% if message.level_tag == 'success' %}-->
-<!--                        <div class="alert alert-success">{{ message }}</div>-->
-<!--                    {% else %}-->
-<!--                        <div class="alert alert-warning">{{ message }}</div>-->
-<!--                    {% endif %}-->
-<!--                {% endfor %}-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    {% endif %}-->
 
         <div class="row">
             <div class="col-md-12 col-md-offset-3 mt-4 p-5 bg-primary text-white rounded">
                 <div class="text-center">
                     <h1>{% block header_text %}{% endblock %}</h1>
 
+                    {% block list_form %}
                     <form method="POST" action="{% block form_action %}{% endblock %}">
                         {{ form.text }}
                         {% csrf_token %}
@@ -66,6 +62,7 @@
                             </div>
                         {% endif %}
                     </form>
+                    {% endblock %}
 
                 </div>
             </div>
@@ -74,6 +71,13 @@
         <div class="row">
             <div class="col-md-12 col-md-offset-3">
                 {% block table %}
+                {% endblock %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                {% block extra_content %}
                 {% endblock %}
             </div>
         </div>

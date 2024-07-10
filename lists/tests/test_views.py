@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import Client
 from django.utils.html import escape
@@ -7,6 +8,8 @@ from rest_framework import status
 
 from lists.forms import ItemForm, EMPTY_ITEM_ERROR
 from lists.models import Item, List
+
+User = get_user_model()
 
 
 @pytest.mark.django_db
@@ -72,16 +75,6 @@ class TestListView:
         response = client.post(f"/lists/{correct_list.id}/", data={"text": "A new item for an existing list"})
 
         assertRedirects(response, f"/lists/{correct_list.id}/")
-
-    # def test_validation_errors_end_up_on_lists_page(self, client: Client):
-    #     """Тест: ошибки валидации оканчиваются на странице списков."""
-    #     list_ = List.objects.create()
-
-    #     response = client.post(f"/lists/{list_.id}/", data={"text": ""})
-    #
-
-    #     expected_error = escape(EMPTY_ITEM_ERROR)
-    #     assert expected_error in response.content.decode()
 
     def post_invalid_input(self, client: Client):
         """Вспомогательная функция для отправки недопустимого ввода."""
@@ -167,6 +160,14 @@ class TestNewList:
         assert List.objects.count() == 0
         assert Item.objects.count() == 0
 
+    def test_list_owner_is_saved_if_user_is_authenticated(self, client: Client):
+        """Тест: владелец сохраняется, если пользователь аутентифицирован."""
+        user = User.objects.create(email='a@b.com')
+        client.force_login(user)
+        client.post("/lists/new", data={"text": "new item"})
+        list_ = List.objects.first()
+        assert list_.owner == user
+
 
 class TestHomePage:
     """Тест домашней страницы."""
@@ -180,3 +181,20 @@ class TestHomePage:
         """Тест: домашняя страница использует форму для элемента."""
         response = client.get("")
         assert isinstance(response.context["form"], ItemForm)
+
+
+@pytest.mark.django_db
+class TestMyLists:
+    """Тест сохранения моих списков."""
+
+    def test_my_lists_url_renders_my_lists_template(self, client: Client):
+        User.objects.create(email="a@b.com")
+        response = client.get("/lists/users/a@b.com/")
+        assertTemplateUsed(response, "my_lists.html")
+
+    def test_passes_correct_owner_to_template(self, client):
+        """Тест: передается правильный владелец в шаблон."""
+        User.objects.create(email="wrong@owner.com")
+        correct_user = User.objects.create(email="a@b.com")
+        response = client.get("/lists/users/a@b.com/")
+        assert response.context["owner"] == correct_user

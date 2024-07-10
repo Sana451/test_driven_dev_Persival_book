@@ -1,7 +1,10 @@
 import pytest
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
 from lists.models import Item, List
+
+User = get_user_model()
 
 
 @pytest.mark.django_db
@@ -35,6 +38,16 @@ class TestListModel:
         item_2 = Item.objects.create(list=list_1, text="item 2")
         item_3 = Item.objects.create(list=list_1, text="3")
         assert list(Item.objects.all()) == [item_1, item_2, item_3]
+
+    def test_lists_can_have_owners(self):
+        """Тест: списки могут иметь владельцев."""
+        user = User.objects.create(email="a@b.com")
+        list_ = List.objects.create(owner=user)
+        assert list_ in user.list_set.all()
+
+    def test_list_owner_is_optional(self):
+        """Тест: владелец списка является необязательным."""
+        List.objects.create()  # не должно поднимать исключение
 
 
 @pytest.mark.django_db
