@@ -17,6 +17,12 @@ jobs:
 
     runs-on: ubuntu-latest
 
+
+    env:
+      EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      EMAIL_INCOMING_PASSWORD_FOR_TEST: ${{ secrets.EMAIL_INCOMING_PASSWORD_FOR_TEST }}
+
     steps:
     - uses: actions/checkout@v4
     - uses: browser-actions/setup-chrome@v1
@@ -43,4 +49,6 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest
+        pytest lists/
+        pytest accounts/
+        pytest functional_tests/

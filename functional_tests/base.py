@@ -35,19 +35,28 @@ def browser():
     browser.quit()
 
 
-def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome, max_wait=10):
+def wait(fn):
+    """Декоратор ожидания"""
+
+    def modified_fn(*args, **kwargs):
+        start_time = time.time()
+        while True:
+            try:
+                return fn(*args, **kwargs)
+            except (AssertionError, WebDriverException) as e:
+                if time.time() - start_time > 5:
+                    raise e
+                time.sleep(0.5)
+
+    return modified_fn
+
+
+@wait
+def wait_for_row_in_list_table(row_text, browser: webdriver.Chrome):
     """Ожидать строку в таблице списка."""
-    start_time = time.time()
-    while True:
-        try:
-            table = browser.find_element(By.ID, "id_list_table")
-            rows = table.find_elements(By.TAG_NAME, "tr")
-            assert row_text in [row.text for row in rows]
-            return
-        except (AssertionError, WebDriverException) as e:
-            if time.time() - start_time > max_wait:
-                raise e
-            time.sleep(0.5)
+    table = browser.find_element(By.ID, "id_list_table")
+    rows = table.find_elements(By.TAG_NAME, "tr")
+    assert row_text in [row.text for row in rows]
 
 
 def get_item_input_box(browser: webdriver.Chrome):
@@ -70,9 +79,6 @@ def wait_until_NOT_presence_of_element(browser: webdriver.Chrome, selector: str,
         EC.presence_of_element_located((by, selector))
     )
     return error_element
-
-
-
 
 
 if __name__ == "__main__":

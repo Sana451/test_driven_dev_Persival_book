@@ -1,5 +1,11 @@
+import os
 import re
+import datetime
+import time
 
+from django.conf import settings
+from imap_tools import MailBox, AND
+from django.test import override_settings
 import pytest
 from unittest.mock import patch
 from selenium.webdriver import Keys
@@ -8,7 +14,7 @@ from selenium.webdriver.common.by import By
 from functional_tests.base import (browser,
                                    wait_until_presence_of_element)
 
-TEST_EMAIL = "edith@example.com"
+TEST_EMAIL = "sana451@mail.ru"
 SUBJECT = "Superlists login link"
 
 
@@ -39,7 +45,7 @@ class TestLogin:
         assert start_url in url
         # Эдит нажимает на ссылку
         browser.get(url)
-        # # Она зарегистрирована в системе!
+        # Она зарегистрирована в системе!
         wait_until_presence_of_element(browser, "//button[text()='Log out']", By.XPATH)
         navbar = browser.find_element(By.CSS_SELECTOR, ".navbar")
         assert TEST_EMAIL in navbar.text
@@ -49,3 +55,39 @@ class TestLogin:
         wait_until_presence_of_element(browser, "email", By.NAME)
         navbar = browser.find_element(By.CSS_SELECTOR, ".navbar")
         assert TEST_EMAIL not in navbar.text
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend')
+    def test_can_send_real_email(self, browser, live_server):
+        """Тест: отправляются настоящие email."""
+        # Эдит заходит на сайт Superlists, вводит email
+        start_url = browser.staging_url if browser.staging_url else live_server.url
+        browser.get(start_url)
+        print(settings.EMAIL_BACKEND)
+        browser.find_element(By.NAME, "email").send_keys(TEST_EMAIL)
+        browser.find_element(By.NAME, "email").send_keys(Keys.ENTER)
+        wait_until_presence_of_element(browser, '//div[contains(text(), "Check your email")]', By.XPATH)
+        # Эдит проверяет свою почту и находит сообщение
+        last_message = None
+        with MailBox("imap.mail.ru").login(username=TEST_EMAIL,
+                                           password=os.environ.get("EMAIL_INCOMING_PASSWORD_FOR_TEST")
+                                           ) as mailbox:
+            while last_message is None:
+                time.sleep(5)
+                messages = list(mailbox.fetch(
+                    AND(subject=SUBJECT, date=datetime.date.today()))
+                )
+                if not messages:
+                    print(f"Empty messages list with subject {SUBJECT}")
+                for msg in list(messages):
+                    url_search = re.search(r'http://.+/.+$', msg.text)
+                    url = url_search.group(0)
+                    if url.startswith(start_url) is True:
+                        last_message = msg
+            mailbox.delete([msg.uid])
+
+        # Эдит нажимает на ссылку в этом сообщении
+        browser.get(url)
+        # Она зарегистрирована в системе!
+        wait_until_presence_of_element(browser, "//button[text()='Log out']", By.XPATH)
+        navbar = browser.find_element(By.CSS_SELECTOR, ".navbar")
+        assert TEST_EMAIL in navbar.text
