@@ -62,28 +62,39 @@ class TestLogin:
         # Эдит заходит на сайт Superlists, вводит email
         start_url = browser.staging_url if browser.staging_url else live_server.url
         browser.get(start_url)
-        print(settings.EMAIL_BACKEND)
         browser.find_element(By.NAME, "email").send_keys(TEST_EMAIL)
         browser.find_element(By.NAME, "email").send_keys(Keys.ENTER)
         wait_until_presence_of_element(browser, '//div[contains(text(), "Check your email")]', By.XPATH)
         # Эдит проверяет свою почту и находит сообщение
         last_message = None
-        with MailBox("imap.mail.ru").login(username=TEST_EMAIL,
-                                           password=os.environ.get("EMAIL_INCOMING_PASSWORD_FOR_TEST")
-                                           ) as mailbox:
+        with MailBox("imap.mail.ru"
+                     ).login(username=TEST_EMAIL,
+                             password=os.environ.get("EMAIL_INCOMING_PASSWORD_FOR_TEST")) as mailbox:
+            attempt_to_receive_msg_count = 0
+            print(f"Connected to imap how {TEST_EMAIL}")
             while last_message is None:
                 time.sleep(5)
-                messages = list(mailbox.fetch(
-                    AND(subject=SUBJECT, date=datetime.date.today()))
-                )
+                attempt_to_receive_msg_count += 1
+                if attempt_to_receive_msg_count > 3:
+                    raise TimeoutError("Too many attempt to receive message (more then 3)")
+
+                messages = list(mailbox.fetch(AND(subject=SUBJECT, date=datetime.date.today())))
                 if not messages:
                     print(f"Empty messages list with subject {SUBJECT}")
+
+                print(f"Received {len(messages)} messages")
                 for msg in list(messages):
-                    url_search = re.search(r'http://.+/.+$', msg.text)
-                    url = url_search.group(0)
-                    if url.startswith(start_url) is True:
+                    if not last_message:
+                        url_search = re.search(r"http://.+/.+$", msg.text)
+                        url = url_search.group(0)
+                        if url.startswith(start_url) is False:
+                            continue
+
                         last_message = msg
-            mailbox.delete([msg.uid])
+                        print("found last message")
+                        mailbox.delete([msg.uid])
+                        break
+                # print("last message not found in received messages")
 
         # Эдит нажимает на ссылку в этом сообщении
         browser.get(url)

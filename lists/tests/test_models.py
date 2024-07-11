@@ -49,6 +49,14 @@ class TestListModel:
         """Тест: владелец списка является необязательным."""
         List.objects.create()  # не должно поднимать исключение
 
+    def test_list_name_is_first_item_text(self):
+        """Тест: имя списка является текстом первого элемента."""
+        list_ = List.objects.create()
+        Item.objects.create(list=list_, text="first item")
+        Item.objects.create(list=list_, text="second item")
+        assert list_.name == "first item"
+
+
 
 @pytest.mark.django_db
 class TestListAndItemModels:

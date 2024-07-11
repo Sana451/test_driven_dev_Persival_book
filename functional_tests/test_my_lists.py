@@ -12,6 +12,7 @@ from selenium.webdriver.common.by import By
 
 from functional_tests.base import (browser,
                                    wait_until_presence_of_element,
+                                   wait_until_NOT_presence_of_element,
                                    add_list_item)
 
 User = get_user_model()
@@ -59,7 +60,7 @@ class TestMyLists:
         wait_until_presence_of_element(browser, "Reticulate splines", By.LINK_TEXT)
         wait_until_presence_of_element(browser, "Reticulate splines", By.LINK_TEXT)
 
-        self.browser.find_element_by_link_text('Reticulate splines').click()
+        browser.find_element(By.LINK_TEXT, "Reticulate splines").click()
         assert browser.current_url == first_list_url
         # Она решает начать еще один список, чтобы только убедиться
         browser.get(live_server.url)
@@ -72,4 +73,4 @@ class TestMyLists:
         assert browser.current_url == second_list_url
         # Она выходит из системы. Опция "Мои списки" исчезает
         browser.find_element(By.XPATH, "//button[text()='Log out']").click()
-        assert browser.find_element(By.LINK_TEXT, "My lists") == []
+        wait_until_NOT_presence_of_element(browser, "My lists", By.LINK_TEXT)
