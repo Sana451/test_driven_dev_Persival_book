@@ -3,7 +3,6 @@ import sys
 import time
 
 import pytest
-from django.conf import settings
 from selenium import webdriver
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
@@ -14,8 +13,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
-from django.contrib.auth import BACKEND_SESSION_KEY, SESSION_KEY, get_user_model
-from django.contrib.sessions.backends.db import SessionStore
 
 DUPLICATE_ITEM_ERROR = "You've already got this in your list"
 
@@ -90,11 +87,8 @@ def add_list_item(item_text, browser):
         print(e)
         num_rows = 0
     get_item_input_box(browser).send_keys(item_text)
-    # time.sleep(10)
     get_item_input_box(browser).send_keys(Keys.ENTER)
-    # time.sleep(10)
     item_number = num_rows + 1
-    # time.sleep(10)
     print(f"{item_number}: {item_text}")
     wait_for_row_in_list_table(f"{item_number}: {item_text}", browser)
 
