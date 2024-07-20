@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.http.request import HttpRequest
+from django.views.decorators.http import require_POST
 
 from functional_tests.base import DUPLICATE_ITEM_ERROR
 from lists.forms import ItemForm
@@ -46,4 +48,14 @@ def new_list(request):
 
 def my_lists(request, email):
     owner = User.objects.get(email=email)
+    print(owner.list_set.all())
     return render(request, "my_lists.html", context={"owner": owner})
+
+
+@require_POST
+def share_list(request: HttpRequest, list_id):
+    email = request.POST["email"]
+    user = User.objects.get_or_create(email=email)[0]
+    list_ = List.objects.get(pk=list_id)
+    list_.shared_with.add(user)
+    return redirect(list_)

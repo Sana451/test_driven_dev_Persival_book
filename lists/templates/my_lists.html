@@ -13,4 +13,13 @@
             </li>
         {% endfor %}
     </ul>
+
+    {% if owner.my_list.all %}
+        <p>Списки, для совместного редактирования: </p>
+            {% for list in owner.my_list.all %}
+                <li>
+                    <a href="{{ list.get_absolute_url }}">{{ list.name }}</a>
+                </li>
+            {% endfor %}
+    {% endif %}
 {% endblock %}

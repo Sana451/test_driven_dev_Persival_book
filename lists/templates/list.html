@@ -12,6 +12,30 @@
     </table>
 {% endblock %}
 
+
+{% block extra_content %}
+    <form method="POST" action="{% url 'share_list' list.pk  %}">
+        <label for="email">Share by email:</label>
+        <input type="text" id="email" name="email" placeholder="your-friend@example.com">
+        <input type="submit" value="Share">
+        {% csrf_token %}
+    </form>
+
+    {% if list.shared_with.all %}
+    <p>Список совместно используется: </p>
+
+    <ul>
+        {% for user in list.shared_with.all %}
+            <li>
+                {{ user.email }}
+            </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+{% endblock %}
+
+
 </body>
 
 </html>

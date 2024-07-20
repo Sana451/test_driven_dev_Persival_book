@@ -198,3 +198,22 @@ class TestMyLists:
         correct_user = User.objects.create(email="a@b.com")
         response = client.get("/lists/users/a@b.com/")
         assert response.context["owner"] == correct_user
+
+
+@pytest.mark.django_db
+class TestSharedList:
+    """Тест совместного использования списков."""
+
+    def test_post_redirects_to_lists_page(self, client: Client):
+        """Тест: POST-запрос переадресуется на страницу списка."""
+        list_ = List.objects.create()
+        item = Item.objects.create(text="List 1", list=list_)
+        response = client.post(f"/lists/{list_.pk}/share/", data={"email": "user@email.ru"})
+        assertRedirects(response, list_.get_absolute_url())
+
+    def test_can_add_user_to_list_shared_with(self, client: Client):
+        """Тест: пользователю добавлен доступ к просмотру списка."""
+        user = User.objects.create(email="test_user@mail.ru")
+        list_ = List.objects.create()
+        client.post(f"/lists/{list_.pk}/share/", data={"email": user.email})
+        assert user in list_.shared_with.all()

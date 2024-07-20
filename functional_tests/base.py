@@ -11,8 +11,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.firefox.options import Options as firefox_options
 from webdriver_manager.chrome import ChromeDriverManager
-
 
 DUPLICATE_ITEM_ERROR = "You've already got this in your list"
 
@@ -24,6 +24,22 @@ def browser():
     if not headless:
         options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
+    staging_server = os.environ.get("STAGING_SERVER")
+    if staging_server:
+        browser.staging_url = "http://" + staging_server
+    else:
+        browser.staging_url = None
+    yield browser
+    browser.quit()
+
+
+@pytest.fixture
+def browser_firefox():
+    options = firefox_options()
+    headless = os.environ.get("HEADLESS")
+    if not headless:
+        options.add_argument("--headless")
+    browser = webdriver.Firefox(options=options)
     staging_server = os.environ.get("STAGING_SERVER")
     if staging_server:
         browser.staging_url = "http://" + staging_server
@@ -82,14 +98,11 @@ def add_list_item(item_text, browser):
     """Добавить элемент списка."""
     try:
         num_rows = len(browser.find_elements(By.CSS_SELECTOR, "#id_list_table tr"))
-        print(num_rows)
     except NoSuchElementException as e:
-        print(e)
         num_rows = 0
     get_item_input_box(browser).send_keys(item_text)
     get_item_input_box(browser).send_keys(Keys.ENTER)
     item_number = num_rows + 1
-    print(f"{item_number}: {item_text}")
     wait_for_row_in_list_table(f"{item_number}: {item_text}", browser)
 
 

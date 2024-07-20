@@ -1,12 +1,17 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
+
+
+User = get_user_model()
 
 
 class List(models.Model):
     """Список дел"""
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.CASCADE)
+    shared_with = models.ManyToManyField(User, related_name="my_list")
 
     @property
     def name(self):
@@ -20,7 +25,7 @@ class List(models.Model):
 
 class Item(models.Model):
     """Элемент списка"""
-    text = models.TextField(default="")
+    text = models.TextField(default=None, blank=False)
     list = models.ForeignKey(List, default=None, on_delete=models.CASCADE)
 
     def __str__(self):

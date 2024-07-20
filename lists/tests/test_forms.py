@@ -25,9 +25,6 @@ class TestItemForm:
         list_ = List.objects.create()
         form = ItemForm(data={"text": "do me"})
         new_item = form.save(for_list=list_)
-        # new_item = form.save(commit=False)
-        # new_item.list = list_
-        # new_item.save()
         assert new_item == Item.objects.first()
         assert new_item.text == "do me"
         assert new_item.list == list_

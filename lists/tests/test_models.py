@@ -56,6 +56,14 @@ class TestListModel:
         Item.objects.create(list=list_, text="second item")
         assert list_.name == "first item"
 
+    def test_can_add_shared_with_to_list(self):
+        """Тест: можно добавить допускаемых пользователей в список."""
+        user = User.objects.create(email="a@b.com")
+        list_ = List.objects.create()
+        list_.save()
+        list_.shared_with.add(user)
+        assert user in list_.shared_with.all()
+        assert list_ in user.my_list.all()
 
 
 @pytest.mark.django_db
