@@ -1,6 +1,7 @@
 import json
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+
+from django.core.exceptions import ValidationError
+from django.http import HttpResponse, JsonResponse
 from rest_framework import routers, serializers, viewsets
 from rest_framework.validators import UniqueTogetherValidator
 
@@ -9,14 +10,22 @@ from lists.forms import EMPTY_ITEM_ERROR
 from lists.models import List, Item
 
 
-def list_api(request, list_id):
+def item_api(request, list_id):
     list_ = List.objects.get(pk=list_id)
-    if request.method == "POST":
-        Item.objects.create(text=request.POST["text"], list=list_)
-        return HttpResponse(status=201, content_type="application/json")
-    elif request.method == "GET":
+
+    if request.method == "GET":
         item_dicts = [{"id": item.id, "text": item.text} for item in list_.item_set.all()]
         return HttpResponse(json.dumps(item_dicts), content_type="application/json")
+
+    elif request.method == "POST":
+        try:
+            item = Item(text=request.POST.get("text"), list=list_)
+            item.full_clean()
+            item.save()
+            return JsonResponse(data={"item": item.text}, status=201)
+        except ValidationError:
+            list_.delete()
+            return JsonResponse(data={"error": "You can't have an empty list item"}, status=400)
 
 
 class ItemSerializer(serializers.ModelSerializer):

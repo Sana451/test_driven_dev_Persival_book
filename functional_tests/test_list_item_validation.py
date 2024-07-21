@@ -1,11 +1,7 @@
-import pytest
-
 from pytest_django import fixtures
 from selenium.webdriver import Keys
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 from functional_tests.base import (wait_for_row_in_list_table,
                                    browser,
@@ -46,7 +42,6 @@ class TestItemValidation:
         wait_for_row_in_list_table("1: Buy milk", browser)
         wait_for_row_in_list_table("2: Make tea", browser)
 
-    # @pytest.mark.skip
     def test_cannot_add_duplicate_items(self, browser: webdriver.Chrome, live_server: fixtures.live_server):
         """Тест: нельзя добавлять повторяющиеся элементы."""
         # Эдит открывает домашнюю страницу и начинает новый список

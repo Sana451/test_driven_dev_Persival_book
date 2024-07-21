@@ -3,7 +3,6 @@ import json
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
-# from lists.forms import DUPLICATE_ITEM_ERROR, EMPTY_ITEM_ERROR
 
 from rest_framework import status
 from lists.models import List, Item
@@ -13,14 +12,9 @@ User = get_user_model()
 base_url = "/api/lists/{}/"
 
 
-def post_empty_input(client: Client):
-    list_ = List.objects.create()
-    return client.post(base_url.format(list_.id), data={"text": ""})
-
-
 @pytest.mark.django_db
-class TestListAPI:
-    """Тест API списков."""
+class TestItemAPI:
+    """Тест API записей."""
 
     def test_get_returns_json_200(self, client: Client):
         """Тест: возвращает json и код состояния 200."""
@@ -56,5 +50,28 @@ class TestListAPI:
     def test_for_invalid_input_nothing_saved_to_db(self, client: Client):
         """Тест: пустой POST запрос не сохраняет в БД."""
         assert Item.objects.count() == 0
-        post_empty_input(client)
+        list_ = List.objects.create()
+        client.post(base_url.format(list_.id), data={"text": ""})
         assert Item.objects.count() == 0
+
+
+@pytest.mark.django_db
+class TestDRFItemAPI:
+    """Тест DRF API записей."""
+
+    def test_invalid_input_nothing_saved_to_db(self, client: Client):
+        """Тест: пустой POST запрос не сохраняет в БД."""
+        assert Item.objects.count() == 0
+        list_ = List.objects.create()
+        client.post(f"/api-drf/items/", data={"list": list_.id, "text": ""})
+
+        assert Item.objects.count() == 0
+
+    def test_valid_input_saved_to_db(self, client: Client):
+        """Тест: пустой POST запрос не сохраняет в БД."""
+        assert Item.objects.count() == 0
+        list_ = List.objects.create()
+        client.post(f"/api-drf/items/", data={"list": list_.id, "text": "Test item text"})
+
+        assert Item.objects.count() == 1
+

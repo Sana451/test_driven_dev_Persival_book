@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 
@@ -25,8 +26,12 @@ class List(models.Model):
 
 class Item(models.Model):
     """Элемент списка"""
-    text = models.TextField(default=None, blank=False)
+    text = models.TextField()
     list = models.ForeignKey(List, default=None, on_delete=models.CASCADE)
+
+    def clean(self):
+        if self.text == "":
+            raise ValidationError("You can't have an empty text in item")
 
     def __str__(self):
         return self.text

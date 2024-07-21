@@ -93,3 +93,11 @@ class TestListAndItemModels:
         Item.objects.create(list=list_1, text="bla")
         item = Item.objects.create(list=list_2, text="bla")
         item.full_clean()  # не должен поднять исключение
+
+    def test_cannot_save_empty_list_items(self):
+        list_ = List.objects.create()
+        item = Item(list=list_, text="")
+        with pytest.raises(ValidationError):
+            item.save()
+            item.full_clean()
+
