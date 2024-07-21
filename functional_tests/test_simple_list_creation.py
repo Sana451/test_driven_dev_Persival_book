@@ -60,7 +60,11 @@ class TestNewVisitor:
         # # информация от Эдит не прошла через данные cookie и пр.
         browser.quit()
         options = Options()
-        options.add_argument('--headless=new')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--headless')
+        options.add_argument('--start-maximized')
         browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
         # Фрэнсис посещает домашнюю страницу. Нет никаких признаков списка Эдит
         browser.get(staging_url if staging_url else live_server.url)

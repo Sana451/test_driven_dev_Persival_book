@@ -56,6 +56,8 @@ class TestLogin:
         navbar = browser.find_element(By.CSS_SELECTOR, ".navbar")
         assert TEST_EMAIL not in navbar.text
 
+    @pytest.mark.skip(
+        reason="Необходимы env vars: EMAIL_INCOMING_PASSWORD_FOR_TEST и EMAIL_HOST_PASSWORD для отправки real email")
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend')
     def test_can_send_real_email(self, browser, live_server):
         """Тест: отправляются настоящие email."""

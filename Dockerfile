@@ -1,13 +1,20 @@
-FROM jenkins/jenkins:2.452.3-jdk17
-USER root
-RUN apt-get update && apt-get install -y lsb-release
-RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \
-  https://download.docker.com/linux/debian/gpg
-RUN echo "deb [arch=$(dpkg --print-architecture) \
-  signed-by=/usr/share/keyrings/docker-archive-keyring.asc] \
-  https://download.docker.com/linux/debian \
-  $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
-RUN apt-get update && apt-get install -y docker-ce-cli
-RUN apt-get install -y python3-pip
-USER jenkins
-RUN jenkins-plugin-cli --plugins "blueocean docker-workflow"
+FROM joyzoursky/python-chromedriver
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+RUN mkdir /code
+WORKDIR /code
+RUN pip install --upgrade pip
+COPY requirements.txt /code/
+
+RUN pip install -r requirements.txt
+COPY . /code/
+RUN python manage.py migrate
+
+RUN pytest accounts/
+RUN pytest lists/
+RUN pytest functional_tests/
+
+EXPOSE 8000
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

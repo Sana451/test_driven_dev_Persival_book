@@ -20,11 +20,13 @@ DUPLICATE_ITEM_ERROR = "You've already got this in your list"
 @pytest.fixture
 def browser():
     options = Options()
-    headless = os.environ.get("HEADLESS")
-    if not headless:
-        options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
+    options.add_argument('--start-maximized')
+    staging_server = os.environ.get("STAGING_SERVER")
     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
-    staging_server = os.environ.get("STAGING_SERVER")
     if staging_server:
         browser.staging_url = "http://" + staging_server
     else:
@@ -33,20 +35,36 @@ def browser():
     browser.quit()
 
 
-@pytest.fixture
-def browser_firefox():
-    options = firefox_options()
-    headless = os.environ.get("HEADLESS")
-    if not headless:
-        options.add_argument("--headless")
-    browser = webdriver.Firefox(options=options)
-    staging_server = os.environ.get("STAGING_SERVER")
-    if staging_server:
-        browser.staging_url = "http://" + staging_server
-    else:
-        browser.staging_url = None
-    yield browser
-    browser.quit()
+# @pytest.fixture
+# def browser():
+#     options = Options()
+#     headless = os.environ.get("HEADLESS")
+#     if not headless:
+#         options.add_argument('--headless=new')
+#     browser = webdriver.Chrome(options=options, service=ChromeService(ChromeDriverManager().install()))
+#     staging_server = os.environ.get("STAGING_SERVER")
+#     if staging_server:
+#         browser.staging_url = "http://" + staging_server
+#     else:
+#         browser.staging_url = None
+#     yield browser
+#     browser.quit()
+#
+#
+# @pytest.fixture
+# def browser_firefox():
+#     options = firefox_options()
+#     headless = os.environ.get("HEADLESS")
+#     if not headless:
+#         options.add_argument("--headless")
+#     browser = webdriver.Firefox(options=options)
+#     staging_server = os.environ.get("STAGING_SERVER")
+#     if staging_server:
+#         browser.staging_url = "http://" + staging_server
+#     else:
+#         browser.staging_url = None
+#     yield browser
+#     browser.quit()
 
 
 def wait(fn):

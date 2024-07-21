@@ -10,12 +10,14 @@ if os.path.exists(DOTENV_PATH):
     load_dotenv(DOTENV_PATH)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+# SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = 'django-insecure-85(2gellmylyss_x6yg*l76tvop0@=n%@pvl_a!+bxdp4mwic9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['89.111.170.80', 'localhost', '127.0.0.1']
+# ALLOWED_HOSTS = ['89.111.170.80', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ['http://89.111.170.80', ]
 
 # Application definition
@@ -73,7 +75,8 @@ WSGI_APPLICATION = 'superlists.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / '../database/db.sqlite3',
+        # 'NAME': BASE_DIR / '../database/db.sqlite3', for build in Staging server
+        'NAME': BASE_DIR / './db.sqlite3',
     }
 }
 
@@ -119,10 +122,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 FORM_RENDERER = "django.forms.renderers.DjangoDivFormRenderer"
 
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'sanamamail451@gmail.com'
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_HOST_USER = 'sanamamail451@gmail.com'
+# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True

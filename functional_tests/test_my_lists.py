@@ -15,7 +15,8 @@ from functional_tests.base import (browser,
                                    wait_until_presence_of_element,
                                    wait_until_NOT_presence_of_element,
                                    add_list_item,
-                                   browser_firefox)
+                                   # browser_firefox
+                                   )
 
 User = get_user_model()
 
@@ -77,7 +78,7 @@ class TestMyListsAndSharing:
         browser.find_element(By.XPATH, "//button[text()='Log out']").click()
         wait_until_NOT_presence_of_element(browser, "My lists", By.LINK_TEXT)
 
-    # @pytest.mark.django_db
+    @pytest.mark.skip(reason="Тест не будет работать в docker без firefox webdriver (joyzoursky/python-chromedriver)")
     def test_can_share_a_list_with_another_user(self, browser, browser_firefox, live_server):
         """Тест обмена данными между пользователями."""
         edith_browser = browser
